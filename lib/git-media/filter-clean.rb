@@ -46,7 +46,7 @@ module GitMedia
           tempfile.write(data)
         end
 
-        while data = input.read(4096)
+        while data = input.read(1048576)
           hashfunc.update(data)
           tempfile.write(data)
         end
