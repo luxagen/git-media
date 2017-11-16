@@ -7,7 +7,7 @@ module GitMedia
       outstream = IO.try_convert(STDOUT)
       outstream.binmode
 
-      while data = stream.read(4096) do
+      while data = stream.read(1048576) do
         print data
       end
     end
