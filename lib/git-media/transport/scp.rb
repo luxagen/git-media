@@ -28,7 +28,7 @@ module GitMedia
           puts file + " exists"
           return true
         else
-          puts file + " doesn't exists"
+          puts file + " doesn't exist"
           return false
         end
       end
@@ -44,7 +44,7 @@ module GitMedia
           puts sha+" downloaded"
           return true
         end
-        puts sha+" download fail"
+        puts sha+" download failed"
         return false
       end
 
@@ -59,7 +59,7 @@ module GitMedia
           puts sha+" uploaded"
           return true
         end
-        puts sha+" upload fail"
+        puts sha+" upload failed"
         return false
       end
       
