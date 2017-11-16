@@ -1,5 +1,7 @@
 require 'git-media/transport'
 
+require 'set'
+
 # move large media to remote server via SCP
 
 # git-media.transport scp
@@ -64,8 +66,12 @@ module GitMedia
       end
       
       def get_unpushed(files)
+        results =  `ssh #{@user}@#{@host} #{@sshport} ls #{@path} -p | grep -v /`
+
+        keys  = results.split("\n").to_set;
+
         files.select do |f|
-          !self.is_in_store?(File.join(@path, f))
+          !keys.include?(f)
         end
       end
       
