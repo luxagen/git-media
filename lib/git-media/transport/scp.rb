@@ -23,12 +23,12 @@ module GitMedia
         end
       end
 
-      def exist?(file)
-        if `ssh #{@user}@#{@host} #{@sshport} [ -f "#{file}" ] && echo 1 || echo 0`.chomp == "1"
-          puts file + " exists"
+      def is_in_store?(obj)
+        if `ssh #{@user}@#{@host} #{@sshport} [ -f "#{obj}" ] && echo 1 || echo 0`.chomp == "1"
+          puts obj + " exists"
           return true
         else
-          puts file + " doesn't exist"
+          puts obj + " doesn't exist"
           return false
         end
       end
@@ -65,7 +65,7 @@ module GitMedia
       
       def get_unpushed(files)
         files.select do |f|
-          !self.exist?(File.join(@path, f))
+          !self.is_in_store?(File.join(@path, f))
         end
       end
       

@@ -30,8 +30,8 @@ module GitMedia
         @uri.merge(path).path
       end
 
-      def exists?(file)
-        @dav.exists?(get_path(file))
+      def is_in_store?(obj)
+        @dav.exists?(get_path(obj))
       end
 
       def get_file(sha, to_file)
@@ -52,7 +52,7 @@ module GitMedia
 
       def get_unpushed(files)
         files.select do |f|
-          !self.exists?(f)
+          !self.is_in_store?(f)
         end
       end
 
