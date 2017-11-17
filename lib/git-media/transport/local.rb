@@ -1,5 +1,7 @@
 require 'git-media/transport'
 
+require 'set'
+
 # move large media to local bin
 
 # git-media.transport local
@@ -40,8 +42,14 @@ module GitMedia
       end
       
       def get_unpushed(files)
+        results =  `ls #{@path} -p 2>/dev/null | grep -v /`
+
+        STDERR.puts "local store '#{@path}' is inaccessible" if $?.exitstatus
+
+        keys  = results.split("\n").to_set;
+
         files.select do |f|
-          !File.exist?(File.join(@path, f))
+          !keys.include?(f)
         end
       end
       
