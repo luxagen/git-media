@@ -44,7 +44,7 @@ module GitMedia
     def self.print_references(refs, short=false)
 
       if refs[:to_expand].size > 0
-        puts "== Unexpanded Media =="
+        puts "== Unexpanded Stubs =="
         if short
           puts "Count: " + refs[:to_expand].size.to_s
         else
@@ -81,7 +81,7 @@ module GitMedia
 
     def self.print_cache_status(refs, short)
       if refs[:unpushed].size > 0
-        puts "== Unpushed Media =="
+        puts "== Unpushed Objects =="
         if short
           puts "Count: " + refs[:unpushed].size.to_s
         else
@@ -94,7 +94,7 @@ module GitMedia
         end
       end
       if refs[:pushed].size > 0
-        puts "== Already Pushed Media =="
+        puts "== Pushed Objects =="
         if short
           puts "Count: " + refs[:pushed].size.to_s
         else

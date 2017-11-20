@@ -50,12 +50,12 @@ module GitMedia
                 print_stream(f)
               end
             else
-              STDERR.puts ("Could not get media, saving placeholder : " + sha)
+              STDERR.puts ("Could not get object, writing placeholder : " + sha)
               puts orig
             end
 
           else
-            STDERR.puts('Media missing, saving placeholder : ' + sha)
+            STDERR.puts('Object missing, writing placeholder : ' + sha)
             # Print orig and not sha to preserve eventual newlines at end of file
             # To avoid git thinking the file has changed
             puts orig
@@ -63,7 +63,7 @@ module GitMedia
         end
       else
         # if it is not a 40 character long hash, just output
-        STDERR.puts('Unknown git-media file format')
+        STDERR.puts('Unknown git-media stub format')
         print orig
         print_stream(STDIN)
       end

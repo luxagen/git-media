@@ -21,11 +21,11 @@ module GitMedia
         sha = tuple[1]
         cache_file = GitMedia.media_path(sha)
         if !File.exist?(cache_file)
-          puts "Downloading " + sha[0,8] + " : " + file
+          puts "Downloading " + sha[0,8]
           @pull.pull(file, sha)
         end
 
-        puts "Expanding " + (index+1).to_s + " of " + status[:to_expand].length.to_s + " : " + sha[0,8] + " : " + file
+        puts "Expanding " + (index+1).to_s + " of " + status[:to_expand].length.to_s + " : " + file
 
         if File.exist?(cache_file)
           FileUtils.cp(cache_file, file)
