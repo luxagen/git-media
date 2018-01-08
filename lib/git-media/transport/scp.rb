@@ -27,10 +27,10 @@ module GitMedia
 
       def is_in_store?(obj)
         if `ssh #{@user}@#{@host} #{@sshport} [ -f "#{obj}" ] && echo 1 || echo 0`.chomp == "1"
-          puts obj + " exists"
+          STDERR.puts(obj + " exists")
           return true
         else
-          puts obj + " doesn't exist"
+          STDERR.puts(obj + " doesn't exist")
           return false
         end
       end
@@ -43,10 +43,10 @@ module GitMedia
         from_file = @user+"@"+@host+":"+File.join(@path, sha)
         `scp #{@scpport} "#{from_file}" "#{to_file}"`
         if $? == 0
-          puts sha+" downloaded"
+          STDERR.puts(sha + " downloaded")
           return true
         end
-        puts sha+" download failed"
+        STDERR.puts(sha + " download failed")
         return false
       end
 
@@ -58,10 +58,10 @@ module GitMedia
         to_file = @user+"@"+@host+":"+File.join(@path, sha)
         `scp #{@scpport} "#{from_file}" "#{to_file}"`
         if $? == 0
-          puts sha+" uploaded"
+          STDERR.puts(sha + " uploaded")
           return true
         end
-        puts sha+" upload failed"
+        STDERR.puts(sha + " upload failed")
         return false
       end
       
