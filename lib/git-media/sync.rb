@@ -1,6 +1,7 @@
 # Find 41-byte stub files and expand them from local cache (or remote store if not cached)
 # Upload cached objects that are not in the remote store
 require 'git-media/status'
+require 'shellwords'
 
 module GitMedia
   module Sync
@@ -47,9 +48,7 @@ module GitMedia
       refLists.each {
         |refList|
 
-        refList = refList.map { |v| "\"" + v + "\""}
-
-        `git update-index --assume-unchanged -- #{refList.join(' ')}`
+        `git update-index --assume-unchanged -- #{Shellwords.shelljoin(refList)}`
       }
       
       puts "Updated git index"
