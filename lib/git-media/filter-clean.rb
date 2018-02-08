@@ -14,7 +14,7 @@ module GitMedia
       data = input.read(42)
       output.binmode
 
-      if data != nil && data.length == 41 && data.match(/^[0-9a-fA-F]+\n$/)
+      if data != nil && data.length == 41 && data.match(/^[0-9a-f]{40}\n$/)
         
         # Exactly 41 bytes long and matches the hex string regex
         # This is most likely a stub
