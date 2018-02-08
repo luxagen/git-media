@@ -171,32 +171,32 @@ module GitMedia
       cmd_opts = case cmd
         when "filter-clean" # parse delete options
           require 'git-media/filter-clean'
-          GitMedia::FilterClean.run!
+          return GitMedia::FilterClean.run!
         when "filter-smudge"
           require 'git-media/filter-smudge'
-          GitMedia::FilterSmudge.run!
+          return GitMedia::FilterSmudge.run!
         when "clear" # parse delete options
           require 'git-media/clear'
-          GitMedia::Clear.run!
+          return GitMedia::Clear.run!
         when "sync"
           require 'git-media/sync'
-          GitMedia::Sync.run!
+          return GitMedia::Sync.run!
         when 'status'
           require 'git-media/status'
           opts = Trollop::options do
             opt :force, "Force status"
             opt :short, "Short status"
           end
-          GitMedia::Status.run!(opts)
+          return GitMedia::Status.run!(opts)
         when 'retroactively-apply'
           require 'git-media/filter-branch'
           GitMedia::FilterBranch.clean!
           arg2 = "--index-filter 'git media index-filter #{ARGV.shift}'"
           system("git filter-branch #{arg2} --tag-name-filter cat -- --all")
-          GitMedia::FilterBranch.clean!
+          return GitMedia::FilterBranch.clean!
         when 'index-filter'
           require 'git-media/filter-branch'
-          GitMedia::FilterBranch.run!
+          return GitMedia::FilterBranch.run!
         else
     print <<EOF
 usage: git media sync|status|clear
