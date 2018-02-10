@@ -1,6 +1,7 @@
 require 'digest/sha1'
 require 'fileutils'
 require 'tempfile'
+require 'git-media/helpers'
 
 module GitMedia
   module FilterClean
@@ -14,8 +15,8 @@ module GitMedia
       data = input.read(42)
       output.binmode
 
-      if data != nil && data.length == 41 && data.match(/^[0-9a-f]{40}\n$/)
-        
+      if data.stub2hash
+
         # Exactly 41 bytes long and matches the hex string regex
         # This is most likely a stub
         # TODO: Maybe add some additional marker in the files like
@@ -52,18 +53,17 @@ module GitMedia
         end
         tempfile.close
 
-        # calculate and print the SHA of the data
-        output.print hx = hashfunc.hexdigest 
-        output.write("\n")
+        # calculate and print the SHA of the data with a newline
+        output.puts hash = hashfunc.hexdigest.enforce_hash
 
         # move the tempfile to our media buffer area
-        media_file = File.join(media_buffer, hx)
+        media_file = File.join(media_buffer, hash)
         FileUtils.mv(tempfile.path, media_file)
 
         elapsed = Time.now - start
 
         if info_output
-          STDERR.puts('Caching object : ' + hx + ' : ' + elapsed.to_s)
+          STDERR.puts('Caching object : ' + hash + ' : ' + elapsed.to_s)
         end
       end
     end

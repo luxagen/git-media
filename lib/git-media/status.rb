@@ -1,4 +1,6 @@
 require 'pp'
+require 'git-media/helpers'
+
 Encoding.default_external = Encoding::UTF_8
 
 module GitMedia
@@ -26,8 +28,7 @@ module GitMedia
           if size == tree_size.to_i or size == tree_size.to_i + 1
             # TODO: read in the data and verify that it's a sha + newline
             fname = fname.tr("\\","") #remove backslash
-            sha = File.read(fname).strip
-            if sha.length == 40 && sha =~ /^[0-9a-f]+$/
+            if sha = File.read(fname).stub2hash
               references[:to_expand] << [fname, sha]
             end
           else

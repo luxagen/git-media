@@ -1,3 +1,5 @@
+require 'git-media/helpers'
+
 module GitMedia
   module FilterSmudge
 
@@ -19,10 +21,10 @@ module GitMedia
       STDIN.binmode
       STDOUT.binmode
       orig = STDIN.readline(64)
-      sha = orig.strip # read no more than 64 bytes
-      if STDIN.eof? && sha.length == 40 && sha.match(/^[0-9a-fA-F]+$/) != nil
+
+      if sha = orig.stub2hash
         # this is a media file
-        media_file = File.join(media_buffer, sha.chomp)
+        media_file = File.join(media_buffer, sha)
         if File.exists?(media_file)
           STDERR.puts('Recovering media : ' + sha)
           File.open(media_file, 'rb') do |f|
