@@ -21,3 +21,26 @@ class String
 
 end
 
+GM_BUFFER_BYTES=1048576
+
+module GitMedia
+  module Helpers
+
+    def self.copy(ostr,istr,prefix = istr.read(GM_BUFFER_BYTES))
+      return nil if !prefix
+
+      begin
+        ostr.write prefix
+
+        while data = istr.read(GM_BUFFER_BYTES) do
+          ostr.write data
+        end
+      rescue
+        return nil
+      end
+
+      return true
+    end
+
+  end
+end

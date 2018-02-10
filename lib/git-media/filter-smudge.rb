@@ -3,17 +3,6 @@ require 'git-media/helpers'
 module GitMedia
   module FilterSmudge
 
-    def self.print_stream(stream)
-      # create a binary stream to write to stdout
-      # this avoids messing up line endings on windows
-      outstream = IO.try_convert(STDOUT)
-      outstream.binmode
-
-      while data = stream.read(1048576) do
-        print data
-      end
-    end
-
     def self.run!
       media_buffer = GitMedia.get_media_buffer
       
@@ -28,7 +17,7 @@ module GitMedia
         if File.exists?(media_file)
           STDERR.puts('Recovering media : ' + sha)
           File.open(media_file, 'rb') do |f|
-            print_stream(f)
+            unless GitMedia::Helpers.copy(STDOUT, f) return 1
           end
         else
           # Read key from config
@@ -49,7 +38,7 @@ module GitMedia
             if File.exist?(cache_file)
               STDERR.puts ("Expanding : " + sha[0,8])
               File.open(media_file, 'rb') do |f|
-                print_stream(f)
+                unless GitMedia::Helpers.copy(STDOUT, f) return 2
               end
             else
               STDERR.puts ("Could not get object, writing placeholder : " + sha)
@@ -66,9 +55,10 @@ module GitMedia
       else
         # if it is not a 40 character long hash, just output
         STDERR.puts('Unknown git-media stub format')
-        print orig
-        print_stream(STDIN)
+        unless GitMedia::Helpers::copy(STDOUT,STDIN,orig) return 3
       end
+
+      return 0
     end
 
   end
