@@ -1,5 +1,5 @@
-# find files that are placeholders (41 char) and download them
-# upload files in media buffer that are not in offsite bin
+# Find 41-byte stub files and expand them from local cache (or remote store if not cached)
+# Upload cached objects that are not in the remote store
 require 'git-media/status'
 
 module GitMedia
