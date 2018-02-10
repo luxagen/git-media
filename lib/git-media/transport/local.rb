@@ -21,10 +21,16 @@ module GitMedia
 
       def get_file(sha, to_file)
         from_file = File.join(@path, sha)
-        if File.exists?(from_file)
-          FileUtils.cp(from_file, to_file)
-          return true
+
+        begin
+          if File.exists?(from_file)
+            FileUtils.cp(from_file, to_file)
+            return true
+          end
+        rescue SystemCallError
+          return false
         end
+
         return false
       end
 
