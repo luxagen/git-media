@@ -44,9 +44,8 @@ module GitMedia
               pull.pull(nil, sha)
             end
 
-            STDERR.puts ("Expanding : " + sha[0,8])
-
             if File.exist?(cache_file)
+              STDERR.puts ("Expanding : " + sha[0,8])
               File.open(media_file, 'rb') do |f|
                 print_stream(f)
               end
