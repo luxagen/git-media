@@ -25,9 +25,7 @@ module GitMedia
 
         output.write (data)
 
-        if info_output
-          STDERR.puts("Skipping stub : " + data[0, 8])
-        end
+        STDERR.puts("Skipping stub : " + data[0, 8]) if info_output
 
       else
 
@@ -62,9 +60,8 @@ module GitMedia
 
         elapsed = Time.now - start
 
-        if info_output
-          STDERR.puts('Caching object : ' + hash + ' : ' + elapsed.to_s)
-        end
+        STDERR.puts('Caching object : ' + hash + ' : ' + elapsed.to_s) if info_output
+
       end
     end
 
