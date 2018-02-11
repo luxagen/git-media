@@ -1,5 +1,3 @@
-require 'digest/sha1'
-require 'fileutils'
 require 'tempfile'
 require 'git-media/helpers'
 
@@ -9,60 +7,40 @@ module GitMedia
     def self.run!(input=STDIN, output=STDOUT, info_output=true)
       
       input.binmode
-      # Read first 42 bytes
-      # If the file is only 41 bytes long (as in the case of a stub)
-      # it will only return a string with a length of 41
-      data = input.read(42)
       output.binmode
 
+      # Read the first data block
+      data = input.read(GM_BUFFER_BYTES)
+
       if data.stub2hash
-
-        # Exactly 41 bytes long and matches the hex string regex
-        # This is most likely a stub
-        # TODO: Maybe add some additional marker in the files like
-        # "[hex string]:git-media"
-        # to really be able to say that a file is a stub
-
-        output.write (data)
-
+        output.write(data) # Pass the stub through
         STDERR.puts("Skipping stub : " + data[0, 8]) if info_output
-
-      else
-
-        # determine and initialize our media buffer directory
-        media_buffer = GitMedia.get_media_buffer
-
-        hashfunc = Digest::SHA1.new
-        start = Time.now
-
-        # read in buffered chunks of the data
-        #  calculating the SHA and copying to a tempfile
-        tempfile = Tempfile.new('media', :binmode => true)
-
-        # Write the first 42 bytes
-        if data != nil
-          hashfunc.update(data)
-          tempfile.write(data)
-        end
-
-        while data = input.read(1048576)
-          hashfunc.update(data)
-          tempfile.write(data)
-        end
-        tempfile.close
-
-        # calculate and print the SHA of the data with a newline
-        output.puts hash = hashfunc.hexdigest.enforce_hash
-
-        # move the tempfile to our media buffer area
-        media_file = File.join(media_buffer, hash)
-        FileUtils.mv(tempfile.path, media_file)
-
-        elapsed = Time.now - start
-
-        STDERR.puts('Caching object : ' + hash + ' : ' + elapsed.to_s) if info_output
-
+        return 0
       end
+
+      # determine and initialize our media buffer directory
+      media_buffer = GitMedia.get_media_buffer
+
+      start = Time.now
+
+      # Copy the data to a temporary filename within the local cache while hashing it
+      tempfile = Tempfile.new('media', media_buffer, :binmode => true)
+      hash = GitMedia::Helpers.copy_hashed(tempfile,input,data)
+
+      return 1 unless hash
+
+      # We got here, so we have a complete temp copy and a valid hash; explicitly close the tempfile to prevent 
+      # autodeletion, then give it its final name (the hash)
+      tempfile.close
+      media_file = File.join(media_buffer, hash)
+      FileUtils.mv(tempfile.path, media_file)
+
+      elapsed = Time.now - start
+
+      output.puts hash # Substitute stub for data
+      STDERR.puts('Caching object : ' + hash + ' : ' + elapsed.to_s) if info_output
+
+      return 0
     end
 
   end

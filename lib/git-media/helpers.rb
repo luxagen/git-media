@@ -42,5 +42,25 @@ module GitMedia
       return true
     end
 
+    def self.copy_hashed(ostr,istr,prefix = istr.read(GM_BUFFER_BYTES))
+      return nil if !prefix
+
+      hashfunc = Digest::SHA1.new
+      hashfunc.update(prefix)
+
+      begin
+        ostr.write(prefix)
+
+        while data = istr.read(GM_BUFFER_BYTES)
+          hashfunc.update(data)
+          ostr.write(data)
+        end
+      rescue
+        return nil
+      end
+
+      return hashfunc.hexdigest.enforce_hash
+    end
+
   end
 end
