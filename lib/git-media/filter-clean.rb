@@ -18,13 +18,10 @@ module GitMedia
         return 0
       end
 
-      # determine and initialize our media buffer directory
-      cache_path = GitMedia.cache_path
-
       start = Time.now
 
       # Copy the data to a temporary filename within the local cache while hashing it
-      tempfile = Tempfile.new('media', cache_path, :binmode => true)
+      tempfile = Tempfile.new('media', GitMedia.cache_path, :binmode => true)
       hash = GitMedia::Helpers.copy_hashed(tempfile,input,prefix)
 
       return 1 unless hash
@@ -32,7 +29,7 @@ module GitMedia
       # We got here, so we have a complete temp copy and a valid hash; explicitly close the tempfile to prevent 
       # autodeletion, then give it its final name (the hash)
       tempfile.close
-      FileUtils.mv(tempfile.path, File.join(cache_path, hash))
+      FileUtils.mv(tempfile.path, GitMedia.cache_obj_path(hash))
 
       elapsed = Time.now - start
 
