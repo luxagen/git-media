@@ -10,30 +10,30 @@ module GitMedia
       output.binmode
 
       # Read the first data block
-      data = input.read(GM_BUFFER_BYTES)
+      prefix = input.read(GM_BUFFER_BYTES)
 
-      if data.stub2hash
-        output.write(data) # Pass the stub through
-        STDERR.puts("Skipping stub : " + data[0, 8]) if info_output
+      if prefix.stub2hash
+        output.write(prefix) # Pass the stub through
+        STDERR.puts("Skipping stub : " + prefix[0, 8]) if info_output
         return 0
       end
 
       # determine and initialize our media buffer directory
-      media_buffer = GitMedia.get_media_buffer
+      cache_obj_path = GitMedia.get_media_buffer
 
       start = Time.now
 
       # Copy the data to a temporary filename within the local cache while hashing it
-      tempfile = Tempfile.new('media', media_buffer, :binmode => true)
-      hash = GitMedia::Helpers.copy_hashed(tempfile,input,data)
+      tempfile = Tempfile.new('media', cache_obj_path, :binmode => true)
+      hash = GitMedia::Helpers.copy_hashed(tempfile,input,prefix)
 
       return 1 unless hash
 
       # We got here, so we have a complete temp copy and a valid hash; explicitly close the tempfile to prevent 
       # autodeletion, then give it its final name (the hash)
       tempfile.close
-      media_file = File.join(media_buffer, hash)
-      FileUtils.mv(tempfile.path, media_file)
+      obj_path = File.join(cache_obj_path, hash)
+      FileUtils.mv(tempfile.path, obj_path)
 
       elapsed = Time.now - start
 
