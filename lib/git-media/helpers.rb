@@ -91,7 +91,16 @@ module GitMedia
       cache_obj_path = GitMedia.cache_obj_path(hash)
       return unless File.exist?(cache_obj_path)
 
-      FileUtils.cp(cache_obj_path, tree_file)
+      File.open(cache_obj_path, 'rb') do |istr|
+        File.open(tree_file, 'wb') do |ostr|
+          unless hash == GitMedia::Helpers.copy_hashed(ostr,istr)
+            STDERR.puts "#{hash}: cache object failed hash check"
+            return false
+          end
+        end
+      end
+
+      return true
     end
 
     def self.aborted?
