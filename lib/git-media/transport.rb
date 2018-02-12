@@ -2,14 +2,12 @@ module GitMedia
   module Transport
     class Base
 
-      def pull(final_file, hash)
-        to_file = GitMedia.cache_obj_path(hash)
-        get_file(hash, to_file)
+      def pull(tree_file, hash)
+        get_file(hash, GitMedia.cache_obj_path(hash))
       end
 
       def push(hash)
-        from_file = GitMedia.cache_obj_path(hash)
-        put_file(hash, from_file)
+        put_file(hash, GitMedia.cache_obj_path(hash))
       end
 
       ## OVERWRITE ##
