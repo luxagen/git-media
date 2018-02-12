@@ -22,9 +22,12 @@ module GitMedia
       end
 
       # Reaching here implies that cache_obj_path exists
-      STDERR.puts "$hash: expanding" if info_output
+      STDERR.puts "#{hash}: expanding" if info_output
       File.open(cache_obj_path, 'rb') do |f|
-        GitMedia::Helpers.copy(STDOUT,f)
+        if hash != GitMedia::Helpers.copy_hashed(STDOUT,f)
+          STDERR.puts "#{hash}: cache object failed hash check"
+          return 1
+        end
       end
 
       return 0
