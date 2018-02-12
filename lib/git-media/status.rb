@@ -54,18 +54,18 @@ module GitMedia
           puts
         end
       end
-      if refs[:expanded].size > 0
-        puts "== Expanded Media =="
-        if short
-          puts "Count: " + refs[:expanded].size.to_s
-        else
-          refs[:expanded].each do |file|
-            size = File.size(file)
-            puts "   " + "(#{self.to_human(size)})".ljust(8) + " #{file}"
-          end
-          puts
-        end
-      end
+#      if refs[:expanded].size > 0
+#        puts "== Expanded Media =="
+#        if short
+#          puts "Count: " + refs[:expanded].size.to_s
+#        else
+#          refs[:expanded].each do |file|
+#            size = File.size(file)
+#            puts "   " + "(#{self.to_human(size)})".ljust(8) + " #{file}"
+#          end
+#          puts
+#        end
+#      end
       if refs[:deleted].size > 0
         puts "== Deleted Media =="
         if short
