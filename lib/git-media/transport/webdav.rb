@@ -34,10 +34,10 @@ module GitMedia
         @dav.exists?(get_path(obj))
       end
 
-      def get_file(sha, to_file)
+      def get_file(hash, to_file)
         to = File.new(to_file, File::CREAT|File::RDWR|File::BINARY)
         begin
-          @dav.get(get_path(sha)) do |chunk|
+          @dav.get(get_path(hash)) do |chunk|
             to.write(chunk)
           end
           true
@@ -46,8 +46,8 @@ module GitMedia
         end
       end
 
-      def put_file(sha, from_file)
-        @dav.put(get_path(sha), File.open(from_file, "rb"), File.size(from_file))
+      def put_file(hash, from_file)
+        @dav.put(get_path(hash), File.open(from_file, "rb"), File.size(from_file))
       end
 
       def get_unpushed(files)

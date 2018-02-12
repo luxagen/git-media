@@ -19,8 +19,8 @@ module GitMedia
         File.exist?(@path)
       end
 
-      def get_file(sha, to_file)
-        from_file = File.join(@path, sha)
+      def get_file(hash, to_file)
+        from_file = File.join(@path, hash)
 
         begin
           if File.exists?(from_file)
@@ -38,8 +38,8 @@ module GitMedia
         File.exist?(@path)
       end
 
-      def put_file(sha, from_file)
-        to_file = File.join(@path, sha)
+      def put_file(hash, from_file)
+        to_file = File.join(@path, hash)
         if File.exists?(from_file)
           FileUtils.cp(from_file, to_file)
           return true

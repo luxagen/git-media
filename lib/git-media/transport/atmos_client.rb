@@ -27,9 +27,9 @@ module GitMedia
         reachable?
       end
 
-      def get_file(sha, to_file)
+      def get_file(hash, to_file)
         dst_file = File.new(to_file, File::CREAT|File::RDWR|File::BINARY)
-        @atmos_client.get(:namespace => sha).data_as_stream do |chunck|
+        @atmos_client.get(:namespace => hash).data_as_stream do |chunck|
           dst_file.write(chunck)
         end
       end
@@ -38,9 +38,9 @@ module GitMedia
         reachable?
       end
 
-      def put_file(sha, from_file)
+      def put_file(hash, from_file)
         src_file = File.open(from_file,"rb")
-        obj_conf = {:data => src_file, :length => File.size(from_file), :namespace => sha}
+        obj_conf = {:data => src_file, :length => File.size(from_file), :namespace => hash}
         obj_conf[:listable_metadata] = {@tag => true} if @tag
         @atmos_client.create(obj_conf)
       end

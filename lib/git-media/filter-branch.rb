@@ -29,7 +29,7 @@ module GitMedia
       filecount = all_files.length.to_s
 
       # determine and initialize our media buffer directory
-      media_buffer = GitMedia.get_media_buffer
+      media_buffer = GitMedia.cache_path
 
       tmp_buffer = get_temp_buffer
 

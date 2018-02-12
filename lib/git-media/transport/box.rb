@@ -40,15 +40,15 @@ module GitMedia
         true
       end
 
-      def get_file(sha, to_file)
+      def get_file(hash, to_file)
         files = get_files(true)
-        if files.has_key?(sha) == false
+        if files.has_key?(hash) == false
           files = get_files()
         end
 
-        file_id = files[sha]
+        file_id = files[hash]
         if file_id == nil
-          STDERR.puts("Storage backend (box) did not contain file : "+sha+", have you run 'git media sync' from all repos?")
+          STDERR.puts("Storage backend (box) did not contain file : "+hash+", have you run 'git media sync' from all repos?")
           return false
         end
 
@@ -63,7 +63,7 @@ module GitMedia
         true
       end
 
-      def put_file(sha, from_file)
+      def put_file(hash, from_file)
         @box.upload_file(from_file, @folder)
       end
 
@@ -76,7 +76,7 @@ module GitMedia
       end
 
       def get_files(use_cache = false)
-        media_buffer = GitMedia.get_media_buffer
+        media_buffer = GitMedia.cache_path
         cache_file = File.join(media_buffer, "cache")
         files = {}
 

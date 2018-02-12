@@ -38,10 +38,10 @@ module GitMedia
         @buckets.size > 0
       end
 
-      def get_file(sha, to_file)
+      def get_file(hash, to_file)
         to = File.new(to_file, File::CREAT|File::RDWR|File::BINARY)
         begin
-          @s3.get(@bucket, sha) do |chunk|
+          @s3.get(@bucket, hash) do |chunk|
             to.write(chunk)
           end
           to.close
@@ -53,7 +53,7 @@ module GitMedia
 
           # Ugly, but AwsError does not seem to give me much choice
           if e.message.include?('NoSuchKey')
-            STDERR.puts("Storage backend (S3) did not contain file : "+sha+", have you run 'git media sync' from all repos?")
+            STDERR.puts("Storage backend (S3) did not contain file : "+hash+", have you run 'git media sync' from all repos?")
             return false
           else
             # Need to use STDERR because this might be called inside a filter
@@ -67,8 +67,8 @@ module GitMedia
         @buckets.size > 0
       end
 
-      def put_file(sha, from_file)
-        @s3.put(@bucket, sha,  File.open(from_file,"rb"))
+      def put_file(hash, from_file)
+        @s3.put(@bucket, hash,  File.open(from_file,"rb"))
       end
 
       def get_unpushed(files)

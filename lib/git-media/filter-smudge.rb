@@ -6,7 +6,7 @@ module GitMedia
     def self.ensure_exists(hash)
       sha.enforce_hash
 
-      cache_obj_path = GitMedia.media_path(hash)
+      cache_obj_path = GitMedia.cache_obj_path(hash)
 
       return cache_obj_path if File.exist?(cache_obj_path) # Early exit if the object is already cached
 

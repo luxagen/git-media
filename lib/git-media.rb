@@ -7,16 +7,17 @@ require 'fileutils'
 
 module GitMedia
 
-  def self.get_media_buffer
+  def self.cache_path
     @@git_dir ||= `git rev-parse --git-dir`.chomp
     media_buffer = File.join(@@git_dir, 'media/objects')
     FileUtils.mkdir_p(media_buffer) if !File.exist?(media_buffer)
     return media_buffer
   end
 
-  def self.media_path(sha)
-    buf = self.get_media_buffer
-    File.join(buf, sha)
+  def self.cache_obj_path(hash)
+    hash.enforce_hash
+    buf = self.cache_path
+    File.join(buf, hash)
   end
 
   # TODO: select the proper transports based on settings

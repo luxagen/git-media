@@ -19,11 +19,11 @@ module GitMedia
       status = GitMedia::Status.find_references
       status[:to_expand].each_with_index do |tuple, index|
         file = tuple[0]
-        sha = tuple[1]
-        cache_file = GitMedia.media_path(sha)
+        hash = tuple[1]
+        cache_file = GitMedia.cache_obj_path(hash)
         if !File.exist?(cache_file)
-          puts "Downloading " + sha[0,8]
-          @pull.pull(file, sha)
+          puts "Downloading " + hash[0,8]
+          @pull.pull(file, hash)
         end
 
         puts "Expanding " + (index+1).to_s + " of " + status[:to_expand].length.to_s + " : " + file
@@ -56,11 +56,11 @@ module GitMedia
 
     def self.upload_local_cache
       # find files in media buffer and upload them
-      all_cache = Dir.chdir(GitMedia.get_media_buffer) { Dir.glob('*') }
+      all_cache = Dir.chdir(GitMedia.cache_path) { Dir.glob('*') }
       unpushed_files = @push.get_unpushed(all_cache)
-      unpushed_files.each_with_index do |sha, index|
-        puts "Uploading " + sha[0, 8] + " " + (index+1).to_s + " of " + unpushed_files.length.to_s
-        @push.push(sha)
+      unpushed_files.each_with_index do |hash, index|
+        puts "Uploading " + hash[0, 8] + " " + (index+1).to_s + " of " + unpushed_files.length.to_s
+        @push.push(hash)
       end
       # TODO: if --clean, remove them
     end

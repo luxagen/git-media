@@ -39,14 +39,14 @@ module GitMedia
         return true
       end
 
-      def get_file(sha, to_file)
-        from_file = @user+"@"+@host+":"+File.join(@path, sha)
+      def get_file(hash, to_file)
+        from_file = @user+"@"+@host+":"+File.join(@path, hash)
         `scp #{@scpport} "#{from_file}" "#{to_file}"`
         if $? == 0
-          STDERR.puts(sha + " downloaded")
+          STDERR.puts(hash + " downloaded")
           return true
         end
-        STDERR.puts(sha + " download failed")
+        STDERR.puts(hash + " download failed")
         return false
       end
 
@@ -54,14 +54,14 @@ module GitMedia
         return true
       end
 
-      def put_file(sha, from_file)
-        to_file = @user+"@"+@host+":"+File.join(@path, sha)
+      def put_file(hash, from_file)
+        to_file = @user+"@"+@host+":"+File.join(@path, hash)
         `scp #{@scpport} "#{from_file}" "#{to_file}"`
         if $? == 0
-          STDERR.puts(sha + " uploaded")
+          STDERR.puts(hash + " uploaded")
           return true
         end
-        STDERR.puts(sha + " upload failed")
+        STDERR.puts(hash + " upload failed")
         return false
       end
       
