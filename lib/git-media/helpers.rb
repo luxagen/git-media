@@ -70,7 +70,7 @@ module GitMedia
       return cache_obj_path if File.exist?(cache_obj_path) # Early exit if the object is already cached
 
       unless auto_download
-        STDERR.puts(hash+': missing, keeping stub')
+        STDERR.puts "#{hash}: missing, keeping stub"
         return nil
       end
 

@@ -3,7 +3,7 @@ require 'git-media/helpers'
 module GitMedia
   module FilterSmudge
 
-    def self.run!
+    def self.run!(info_output=true)
       STDIN.binmode
       STDOUT.binmode
 
@@ -11,7 +11,7 @@ module GitMedia
 
       unless hash = prefix.stub2hash
         # If the file isn't a stub, just pass it through
-        STDERR.puts('Unknown git-media stub format')
+        STDERR.puts 'not a git-media stub' if info_output
         GitMedia.Helpers.copy(STDOUT,STDIN,prefix)
         return 0
       end
@@ -22,7 +22,7 @@ module GitMedia
       end
 
       # Reaching here implies that cache_obj_path exists
-      STDERR.puts ("Expanding : " + hash[0,8])
+      STDERR.puts "$hash: expanding" if info_output
       File.open(cache_obj_path, 'rb') do |f|
         GitMedia::Helpers.copy(STDOUT,f)
       end

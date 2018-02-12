@@ -25,7 +25,8 @@ module GitMedia
 
         return 1 unless cache_obj_path = GitMedia::Helpers.ensure_cached(hash,true)
 
-        STDERR.puts "expanding " + (index+1).to_s + " of " + strCount + " : " + tree_file
+        strIdx = (index+1).to_s
+        puts "#{hash}: expanding to #{tree_file} [#{strIdx}/#{strCount}]"
         GitMedia::Helpers.expand(tree_file,hash)
       end
     end
@@ -44,16 +45,20 @@ module GitMedia
 
         `git update-index --assume-unchanged -- #{Shellwords.shelljoin(refList)}`
       }
-      
-      puts "Updated git index"
+
+      puts 'updated git index'
     end
 
     def self.upload_local_cache
       # find files in media buffer and upload them
       all_cache = Dir.chdir(GitMedia.cache_path) { Dir.glob('*') }
       unpushed_files = @push.get_unpushed(all_cache)
+
+      strCount = unpushed_files.length.to_s
+
       unpushed_files.each_with_index do |hash, index|
-        puts "Uploading " + hash[0, 8] + " " + (index+1).to_s + " of " + unpushed_files.length.to_s
+        strIdx = (index+1).to_s
+        puts "#{hash}: uploading [#{strIdx}/#{strCount}]"
         @push.push(hash)
       end
       # TODO: if --clean, remove them

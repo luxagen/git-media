@@ -12,13 +12,13 @@ module GitMedia
       # Read the first data block
       prefix = input.read(GM_BUFFER_BYTES)
 
-      if prefix.stub2hash
+      if hash = prefix.stub2hash
         # If the pipe broke (rather than the input legitimately ending), the cached object is truncated and the hash is 
         # invalid; return nothing and allow the temp file to auto-delete
         GitMedia::Helpers.check_abort
 
         output.write(prefix) # Pass the stub through
-        STDERR.puts("Skipping stub : " + prefix[0, 8]) if info_output
+        STDERR.puts "#{hash}: leaving stub" if info_output
         return 0
       end
 
@@ -38,10 +38,10 @@ module GitMedia
       tempfile.close
       FileUtils.mv(tempfile.path, GitMedia.cache_obj_path(hash))
 
-      elapsed = Time.now - start
+      strElapsed = (Time.now - start).to_s
 
       output.puts hash # Substitute stub for data
-      STDERR.puts('Caching object : ' + hash + ' : ' + elapsed.to_s) if info_output
+      STDERR.puts "#{hash}: cached in #{strElapsed} seconds" if info_output
 
       return 0
     end
