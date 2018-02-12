@@ -87,8 +87,7 @@ module GitMedia
           puts "Count: " + refs[:unpushed].size.to_s
         else
           refs[:unpushed].each do |hash|
-            cache_file = GitMedia.cache_obj_path(hash)
-            size = File.size(cache_file)
+            size = File.size(GitMedia.cache_obj_path(hash))
             puts "   " + "(#{self.to_human(size)})".ljust(8) + ' ' + hash[0, 8]
           end
           puts
@@ -100,8 +99,7 @@ module GitMedia
           puts "Count: " + refs[:pushed].size.to_s
         else
           refs[:pushed].each do |hash|
-            cache_file = GitMedia.cache_obj_path(hash)
-            size = File.size(cache_file)
+            size = File.size(GitMedia.cache_obj_path(hash))
             puts "   " + "(#{self.to_human(size)})".ljust(8) + ' ' + hash[0, 8]
           end
           puts
