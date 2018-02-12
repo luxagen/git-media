@@ -16,9 +16,8 @@ module GitMedia
         return 0
       end
 
-      unless cache_obj_path = GitMedia::Helpers.ensure_cached(hash)
+      unless cache_obj_path = GitMedia::Helpers.ensure_cached(hash,"true" == `git config git-media.autodownload`.chomp.downcase)
         print prefix # Pass stub through
-        STDERR.puts(hash+': cannot expand from cache')
         return 0
       end
 

@@ -17,22 +17,16 @@ module GitMedia
 
     def self.expand_references
       status = GitMedia::Status.find_references
+      strCount = status[:to_expand].length.to_s
+
       status[:to_expand].each_with_index do |tuple, index|
-        file = tuple[0]
-        hash = tuple[1]
-        cache_file = GitMedia.cache_obj_path(hash)
-        if !File.exist?(cache_file)
-          puts "Downloading " + hash[0,8]
-          @pull.pull(file, hash)
-        end
+        tree_file = tuple[0]
+        hash = tuple[1].enforce_hash
 
-        puts "Expanding " + (index+1).to_s + " of " + status[:to_expand].length.to_s + " : " + file
+        return 1 unless cache_obj_path = GitMedia::Helpers.ensure_cached(hash,true)
 
-        if File.exist?(cache_file)
-          FileUtils.cp(cache_file, file)
-        else
-          puts 'Could not get media from storage'
-        end
+        STDERR.puts "expanding " + (index+1).to_s + " of " + strCount + " : " + tree_file
+        GitMedia::Helpers.expand(tree_file,hash)
       end
     end
 

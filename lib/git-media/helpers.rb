@@ -62,31 +62,36 @@ module GitMedia
       return hashfunc.hexdigest.enforce_hash
     end
 
-    def self.ensure_cached(hash)
+    def self.ensure_cached(hash,auto_download)
       hash.enforce_hash
 
       cache_obj_path = GitMedia.cache_obj_path(hash)
 
       return cache_obj_path if File.exist?(cache_obj_path) # Early exit if the object is already cached
 
-      # Read key from config
-      auto_download = `git config git-media.autodownload`.chomp.downcase == "true"
-
       unless auto_download
-        STDERR.puts('Object missing, writing placeholder: ' + hash)
+        STDERR.puts(hash+': missing, keeping stub')
         return nil
       end
 
-      STDERR.puts ("Downloading: " + hash[0,8])
+      STDERR.print hash
       pull = GitMedia.get_pull_transport
       pull.pull(nil, hash) # nil because this filter has no clue what file stdout will be piped into
 
       unless File.exist?(cache_obj_path)
-        STDERR.puts ("Could not get object, writing stub : " + hash)
+        STDERR.puts ": download failed"
         return nil
       end
 
+      STDERR.puts ": downloaded"
       return cache_obj_path
+    end
+
+    def self.expand(tree_file,hash)
+      cache_obj_path = GitMedia.cache_obj_path(hash)
+      return unless File.exist?(cache_obj_path)
+
+      FileUtils.cp(cache_obj_path, tree_file)
     end
 
     def self.aborted?
