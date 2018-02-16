@@ -20,29 +20,7 @@ module GitMedia
       end
 
       def read_store_obj(hash)
-          store_obj_path = File.join(@path, hash)
-          return File.open(store_obj_path, 'rb')
-      end
-
-      def get_file(hash, to_file)
-        istr=read_store_obj(hash)
-        from_file = File.join(@path, hash)
-
-        begin
-          File.open(to_file, 'wb') do |ostr|
-            if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
-              STDERR.puts "#{hash}: remote object failed hash check"
-              istr.close
-              FileUtils.rm to_file
-              return false
-            end
-          end
-        rescue
-          istr.close
-          raise
-        end
-
-        return true
+          return File.open(File.join(@path, hash), 'rb')
       end
 
       def write?
