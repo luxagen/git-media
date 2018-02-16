@@ -1,0 +1,1 @@
+scp -q path /dev/stdout 2>/dev/null
