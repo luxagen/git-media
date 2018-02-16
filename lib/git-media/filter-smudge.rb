@@ -16,7 +16,16 @@ module GitMedia
         return 0
       end
 
-      unless cache_obj_path = GitMedia::Helpers.ensure_cached(hash,"true" == `git config git-media.autodownload`.chomp.downcase)
+      autoDownload  =  "true" == `git config git-media.autodownload`.chomp.downcase
+      directDownload  =  'true' == `git config git-media.directdownload`.chomp.downcase
+
+      if autoDownload && directDownload
+        STDERR.puts "#{hash}: downloading" if info_output
+        GitMedia.get_transport.get_file2(hash,STDOUT)
+        return 0
+      end
+
+      unless cache_obj_path = GitMedia::Helpers.ensure_cached(hash,autoDownload) # TODO make ensure_cached always download and put autoDownload check here
         print prefix # Pass stub through
         return 0
       end
