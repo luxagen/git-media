@@ -23,6 +23,14 @@ module GitMedia
           return File.open(File.join(@path, hash), 'rb')
       end
 
+      def write_store_obj(hash)
+          return File.open(File.join(@path, hash), 'wb')
+      end
+
+      def kill_store_obj(hash)
+        FileUtils.rm(File.join(@path, hash))
+      end
+
       def write?
         File.exist?(@path)
       end
