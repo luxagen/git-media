@@ -46,9 +46,9 @@ module GitMedia
       end
 
       def list(intersect,exclude_from)
-        results =  `ls #{@path} -p 2>/dev/null | grep -v /`
+        results =  `ls #{@path} -p 2>/dev/null | grep -v /$`
 
-        STDERR.puts "local store '#{@path}' is inaccessible" if $?.exitstatus
+        STDERR.puts "local store '#{@path}' is inaccessible" if $?.exitstatus > 0
 
         upstream = results.split("\n").to_set;
 
