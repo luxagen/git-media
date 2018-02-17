@@ -134,5 +134,6 @@ module GitMedia
         next true
       end
     end
+
   end
 end
