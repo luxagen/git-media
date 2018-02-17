@@ -59,7 +59,11 @@ module GitMedia
       unpushed_files.each_with_index do |hash, index|
         strIdx = (index+1).to_s
         puts "#{hash}: uploading [#{strIdx}/#{strCount}]"
-        @push.push(hash)
+        GitMedia::Helpers.push(
+          hash,
+          File.open(
+            File.join(GitMedia.cache_path, hash),
+            'rb'))
       end
       # TODO: if --clean, remove them
     end

@@ -16,29 +16,30 @@ module GitMedia
       end
 
       def read(hash)
-        File.open(File.join(@path, hash), 'rb') do |istr|
+        return File.open(File.join(@path, hash), 'rb') do |istr|
           STDERR.puts "before yield"
           value = yield istr
           STDERR.puts "after yield"
           next value
         end
 
-        next false
+        return false
       end
 
       def write(hash)
         temp = File.join(@path,'obj.temp')
 
-        value=false
+        result=false
 
-        File.open(temp,'wb') do |ostr|
+        result = File.open(temp,'wb') do |ostr|
           STDERR.puts 'before yield'
           value = yield ostr
           STDERR.puts 'after yield'
+          next value
         end
 
-        FileUtils.mv(temp,File.join(@path, hash),{force}) if value
-        next value
+        FileUtils.mv(temp,File.join(@path, hash),:force => true) if result
+        return result
       end
 
       ###################################
