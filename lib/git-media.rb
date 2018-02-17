@@ -46,22 +46,7 @@ module GitMedia
 
     when "scp"
       require 'git-media/transport/scp'
-
-      user = `git config git-media.scpuser`.chomp
-      host = `git config git-media.scphost`.chomp
-      path = `git config git-media.scppath`.chomp
-      port = `git config git-media.scpport`.chomp
-      if user === ""
-        raise "git-media.scpuser not set for scp transport"
-      end
-      if host === ""
-        raise "git-media.scphost not set for scp transport"
-      end
-      if path === ""
-        raise "git-media.scppath not set for scp transport"
-      end
-      GitMedia::Transport::Scp.new(user, host, path, port)
-
+      return GitMedia::Transport::Scp.new
     when "local"
       require 'git-media/transport/local'
       return GitMedia::Transport::Local.new
