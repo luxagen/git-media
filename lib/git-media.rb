@@ -64,13 +64,7 @@ module GitMedia
 
     when "local"
       require 'git-media/transport/local'
-
-      path = `git config git-media.localpath`.chomp
-      if path === ""
-        raise "git-media.localpath not set for local transport"
-      end
-      GitMedia::Transport::Local.new(path)
-
+      return GitMedia::Transport::Local.new
     when "s3"
       require 'git-media/transport/s3'
 
