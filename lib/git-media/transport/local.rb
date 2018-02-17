@@ -15,35 +15,38 @@ module GitMedia
         @path = path
       end
 
-      def read?
-        File.exist?(@path)
+      def read(hash)
+        File.open(File.join(@path, hash), 'rb') do |istr|
+          STDERR.puts "before yield"
+          value = yield istr
+          STDERR.puts "after yield"
+          next value
+        end
+
+        next false
       end
 
-      def read_store_obj(hash)
-          return File.open(File.join(@path, hash), 'rb')
+      def write(hash)
+        temp = File.join(@path,'obj.temp')
+
+        value=false
+
+        File.open(temp,'wb') do |ostr|
+          STDERR.puts 'before yield'
+          value = yield ostr
+          STDERR.puts 'after yield'
+        end
+
+        FileUtils.mv(temp,File.join(@path, hash),{force}) if value
+        next value
       end
 
-      def write_store_obj(hash)
-          return File.open(File.join(@path, hash), 'wb')
-      end
-
-      def kill_store_obj(hash)
-        FileUtils.rm(File.join(@path, hash))
-      end
+      ###################################
 
       def write?
         File.exist?(@path)
       end
 
-      def put_file(hash, from_file)
-        to_file = File.join(@path, hash)
-        if File.exists?(from_file)
-          FileUtils.cp(from_file, to_file)
-          return true
-        end
-        return false
-      end
-      
       def get_unpushed(files)
         results =  `ls #{@path} -p 2>/dev/null | grep -v /`
 

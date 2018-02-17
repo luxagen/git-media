@@ -21,7 +21,7 @@ module GitMedia
 
       if autoDownload && directDownload
         STDERR.puts "#{hash}: downloading" if info_output
-        GitMedia.get_transport.get_file2(hash,STDOUT)
+        return 1 unless GitMedia::Helpers.pull(STDOUT,hash)
         return 0
       end
 
