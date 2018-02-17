@@ -112,5 +112,27 @@ module GitMedia
     def self.check_abort
       exit 1 if aborted?
     end
+
+    def self.pull(ostr,hash)
+      return GitMedia.get_transport.read(hash) do |istr|
+        if hash != copy_hashed(ostr,istr)
+          STDERR.puts "#{hash}: rehash failed during download"
+          next false
+        end
+
+        next true
+      end
+    end
+
+    def self.push(hash,istr)
+      return GitMedia.get_transport.write(hash) do |ostr|
+        if hash != copy_hashed(ostr,istr)
+          STDERR.puts "#{hash}: rehash failed during upload"
+          next false
+        end
+
+        next true
+      end
+    end
   end
 end
