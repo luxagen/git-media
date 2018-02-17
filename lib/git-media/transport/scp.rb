@@ -2,7 +2,7 @@ require 'git-media/transport'
 
 require 'set'
 
-# move large media to remote server via SCP
+# Implements object store at an SCP path
 
 # git-media.transport scp
 # git-media.scpuser someuser
@@ -13,14 +13,23 @@ module GitMedia
   module Transport
     class Scp < Base
 
-      def initialize(user, host, path, port)
-        @user = user
-        @host = host
-        @path = path
-        unless port === ""
-          @sshport = "-p#{port}"
+      def initialize
+        @user = `git config git-media.scpuser`.chomp
+        @host = `git config git-media.scphost`.chomp
+        @path = `git config git-media.scppath`.chomp
+        port = `git config git-media.scpport`.chomp
+        if @user === ""
+          raise "git-media.scpuser not set for scp transport"
         end
-        unless port === ""
+        if @host === ""
+          raise "git-media.scphost not set for scp transport"
+        end
+        if @path === ""
+          raise "git-media.scppath not set for scp transport"
+        end
+
+        if port
+          @sshport = "-p#{port}"
           @scpport = "-P#{port}"
         end
       end
