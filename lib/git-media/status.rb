@@ -113,7 +113,8 @@ module GitMedia
       # find files in media buffer and upload them
       references = {:unpushed => [], :pushed => []}
       all_cache = Dir.chdir(GitMedia.cache_path) { Dir.glob('*') }
-      unpushed_files = @push.list(nil,all_cache.to_set) || []
+      all_cache_set = all_cache.to_set
+      unpushed_files = @push.list(all_cache_set,all_cache_set) || []
       references[:unpushed] = unpushed_files
       references[:pushed] = all_cache - unpushed_files rescue []
       references
