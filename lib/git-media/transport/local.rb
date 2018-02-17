@@ -42,24 +42,20 @@ module GitMedia
         return result
       end
 
-      ###################################
-
-      def write?
-        File.exist?(@path)
-      end
-
-      def get_unpushed(files)
+      def list(intersect,exclude_from)
         results =  `ls #{@path} -p 2>/dev/null | grep -v /`
 
         STDERR.puts "local store '#{@path}' is inaccessible" if $?.exitstatus
 
-        keys  = results.split("\n").to_set;
+        upstream = results.split("\n").to_set;
 
-        files.select do |f|
-          !keys.include?(f)
-        end
+        intersected  =  intersect ? upstream&intersect : upstream
+
+        excluded  =  exclude_from ? exclude_from-intersected : intersected
+
+        return excluded
       end
-      
+
     end
   end
 end

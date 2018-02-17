@@ -32,10 +32,6 @@ module GitMedia
         false
       end
 
-      def promote(hash)
-        false
-      end
-
       def list(set)
         false
       end

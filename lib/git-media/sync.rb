@@ -52,7 +52,7 @@ module GitMedia
     def self.upload_local_cache
       # find files in media buffer and upload them
       all_cache = Dir.chdir(GitMedia.cache_path) { Dir.glob('*') }
-      unpushed_files = @push.get_unpushed(all_cache)
+      unpushed_files = @push.list(nil,all_cache.to_set)
 
       strCount = unpushed_files.length.to_s
 
