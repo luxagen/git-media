@@ -2,7 +2,7 @@ require 'git-media/transport'
 
 require 'set'
 
-# move large media to local bin
+# Implements local (accessible via a filesystem path) object store
 
 # git-media.transport local
 # git-media.localpath /opt/media
@@ -11,8 +11,11 @@ module GitMedia
   module Transport
     class Local < Base
 
-      def initialize(path)
-        @path = path
+      def initialize
+        @path = `git config git-media.localpath`.chomp
+        if @path === ""
+          raise "git-media.localpath not set for local transport"
+        end
       end
 
       def read(hash)
@@ -51,9 +54,7 @@ module GitMedia
 
         intersected  =  intersect ? upstream&intersect : upstream
 
-        excluded  =  exclude_from ? exclude_from-intersected : intersected
-
-        return excluded
+        return exclude_from ? exclude_from-intersected : intersected
       end
 
     end
