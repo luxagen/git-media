@@ -18,6 +18,8 @@ module GitMedia
 
       autoDownload  =  "true" == `git config git-media.autodownload`.chomp.downcase
 
+      # TODO ABORT CHECKING
+
       return 1 unless GitMedia::Helpers.expand(STDOUT,hash,autoDownload,info_output)
       return 0
     end
