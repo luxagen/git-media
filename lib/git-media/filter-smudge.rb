@@ -20,7 +20,7 @@ module GitMedia
 
       # TODO ABORT CHECKING
 
-      return 1 unless GitMedia::Helpers.get_object(STDOUT,hash,autoDownload,info_output)
+      return 1 unless GitMedia.get_object(STDOUT,hash,autoDownload,info_output)
       return 0
     end
 

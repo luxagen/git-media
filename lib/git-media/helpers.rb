@@ -64,81 +64,6 @@ module GitMedia
       return hashfunc.hexdigest.enforce_hash
     end
 
-    def self.get_object(ostr,hash,download,info_output)
-      hash.enforce_hash
-
-      download  ||=  'true' == `git config git-media.autodownload`.chomp.downcase
-      directDownload  =  'true' == `git config git-media.directdownload`.chomp.downcase
-
-      cache_obj_path = GitMedia.cache_obj_path(hash)
-
-      unless File.exist?(cache_obj_path)
-        unless download
-          # Fail and preserve stub
-          STDERR.puts "#{hash}: missing, keeping stub"
-          ostr.puts hash
-          return true # Success (of a sort)
-        end
-
-        STDERR.puts "#{hash}: downloading" if info_output
-
-        # We want to download and direct downloads are enabled, so download straight to ostr
-        if directDownload
-          unless download_from_store(ostr,hash)
-            STDERR.puts "#{hash}: download failed"
-            return false
-          end
-
-          return true
-        end
-
-        # We want to dowload but direct downloads are disabled, so just download to cache
-        unless download_to_cache(cache_obj_path,hash)
-          STDERR.puts "#{hash}: download failed"
-          return false
-        end
-
-        STDERR.puts "#{hash}: downloaded"
-      end
-
-      # Getting here implies that the matching object is in the cache, so expand it
-      STDERR.puts "#{hash}: expanding" if info_output
-      return File.open(cache_obj_path, 'rb') do |ostr|
-        if hash != copy_hashed(STDOUT,ostr)
-          STDERR.puts "#{hash}: cache object failed hash check"
-          next false
-        end
-
-        next true
-      end
-    end
-
-    def self.download_from_store(ostr,hash)
-      hash.enforce_hash
-
-      begin
-        return GitMedia.get_transport.read(hash) do |istr|
-          if hash != copy_hashed(ostr,istr)
-            STDERR.puts "#{hash}: rehash failed during download"
-            exit 1
-          end
-          next true
-        end
-      rescue
-        return false
-      end
-    end
-
-    def self.download_to_cache(cache_obj_path,hash)
-      hash.enforce_hash
-
-      File.open(cache_obj_path, 'wb') do |ostr|
-        return false unless download_from_store(ostr,hash)
-      end
-
-      return File.exist?(cache_obj_path)
-    end
-
     def self.aborted?
       # I really really hate having to do this, but it's a reasonably reliable kludge to give a dying git parent process time to 
       sleep 0.1
@@ -147,17 +72,6 @@ module GitMedia
 
     def self.check_abort
       exit 1 if aborted?
-    end
-
-    def self.push(hash,istr)
-      return GitMedia.get_transport.write(hash) do |ostr|
-        if hash != copy_hashed(ostr,istr)
-          STDERR.puts "#{hash}: rehash failed during upload"
-          next false
-        end
-
-        next true
-      end
     end
 
   end
