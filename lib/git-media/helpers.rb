@@ -18,7 +18,7 @@ class String
     # TODO: Maybe add some additional marker in the files like
     # "[hex string]:git-media"
     # to really be able to say that a file is a stub
-    return self[0..-2] if self && self[-2]=="\n" && self[0..-2].match(/^[0-9a-f]{40}\z/)
+    return self[0..-2] if self && self[-1]=="\n" && self[0..-2].match(GM_HASH_REGEX)
   end
 
 end
@@ -76,16 +76,21 @@ module GitMedia
         return nil
       end
 
-      STDERR.print hash
-      pull = GitMedia.get_pull_transport
-      pull.pull(nil, hash) # nil because this filter has no clue what file stdout will be piped into
+      GitMedia.get_transport.read(hash) do |istr|
+        File.open(cache_obj_path, 'wb') do |ostr|
+          if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
+            STDERR.puts "#{hash}: rehash failed during download"
+            return 1
+          end
+        end
+      end
 
       unless File.exist?(cache_obj_path)
-        STDERR.puts ": download failed"
+        STDERR.puts "#{hash}: download failed"
         return nil
       end
 
-      STDERR.puts ": downloaded"
+      STDERR.puts "#{hash}: downloaded"
       return cache_obj_path
     end
 
@@ -96,7 +101,7 @@ module GitMedia
       File.open(cache_obj_path, 'rb') do |istr|
         File.open(tree_file, 'wb') do |ostr|
           unless hash == GitMedia::Helpers.copy_hashed(ostr,istr)
-            STDERR.puts "#{hash}: cache object failed hash check"
+            STDERR.puts "#{hash}: rehash failed during download"
             return false
           end
         end

@@ -12,7 +12,7 @@ module GitMedia
       unless hash = prefix.stub2hash
         # If the file isn't a stub, just pass it through
         STDERR.puts 'not a git-media stub' if info_output
-        GitMedia.Helpers.copy(STDOUT,STDIN,prefix)
+        GitMedia::Helpers.copy(STDOUT,STDIN,prefix)
         return 0
       end
 
@@ -32,8 +32,8 @@ module GitMedia
 
       # Reaching here implies that cache_obj_path exists
       STDERR.puts "#{hash}: expanding" if info_output
-      File.open(cache_obj_path, 'rb') do |f|
-        if hash != GitMedia::Helpers.copy_hashed(STDOUT,f)
+      File.open(cache_obj_path, 'rb') do |ostr|
+        if hash != GitMedia::Helpers.copy_hashed(STDOUT,ostr)
           STDERR.puts "#{hash}: cache object failed hash check"
           return 1
         end

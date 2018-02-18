@@ -55,7 +55,7 @@ module GitMedia
           STDERR.puts(hash + " downloaded")
           return true
         end
-        STDERR.puts(hash + " download failed")
+        STDERR.puts("#{hash}: download failed")
         return false
       end
 
