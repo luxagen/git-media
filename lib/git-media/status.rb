@@ -7,7 +7,7 @@ module GitMedia
   module Status
 
     def self.run!(opts)
-      @push = GitMedia.get_push_transport
+      @push = GitMedia.get_transport
       r = self.find_references
       self.print_references(r, opts[:short])
       r = self.local_cache_status

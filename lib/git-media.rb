@@ -20,11 +20,6 @@ module GitMedia
     File.join(buf, hash)
   end
 
-  # TODO: select the proper transports based on settings
-  def self.get_push_transport
-    self.get_transport
-  end
-
   def self.get_credentials_from_netrc(url)
     require 'uri'
     require 'netrc'
@@ -134,10 +129,6 @@ module GitMedia
     else
       raise "Invalid transport #{transport}"
     end
-  end
-
-  def self.get_pull_transport
-    self.get_transport
   end
 
   module Application
