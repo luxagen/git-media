@@ -64,6 +64,7 @@ module GitMedia
       return hashfunc.hexdigest.enforce_hash
     end
 
+    # TODO THIS SHOULD GO AS IT'S INCOMPATIBLE WITH DIRECT DOWNLOAD
     def self.ensure_cached(hash,auto_download)
       hash.enforce_hash
 
@@ -80,7 +81,7 @@ module GitMedia
         File.open(cache_obj_path, 'wb') do |ostr|
           if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
             STDERR.puts "#{hash}: rehash failed during download"
-            return 1
+            exit 1
           end
         end
       end
