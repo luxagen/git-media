@@ -4,7 +4,7 @@ module GitMedia
   module Clear
 
     def self.run!
-      @push = GitMedia.get_push_transport
+      @push = GitMedia.get_transport
       self.clear_local_cache
     end
     

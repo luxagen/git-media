@@ -7,8 +7,7 @@ module GitMedia
   module Sync
 
     def self.run!
-      @push = GitMedia.get_push_transport
-      @pull = GitMedia.get_pull_transport
+      @push = @pull = GitMedia.get_transport
 
       self.expand_references
       self.update_index
