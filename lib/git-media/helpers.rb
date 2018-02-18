@@ -64,46 +64,58 @@ module GitMedia
       return hashfunc.hexdigest.enforce_hash
     end
 
-    def self.expand(ostr,hash,autoDownload,info_output)
+    def self.expand(ostr,hash,download,info_output)
       hash.enforce_hash
 
+      download ||== `git config git-media.autodownload`.chomp.downcase
       directDownload  =  'true' == `git config git-media.directdownload`.chomp.downcase
-
-      if autoDownload&&directDownload
-        STDERR.puts "#{hash}: downloading" if info_output
-        return pull(ostr,hash)
-      end
-
-        unless cache_obj_path = ensure_cached(hash,autoDownload) # TODO make ensure_cached always download and put autoDownload check here
-        STDERR.puts "#{hash}: missing, keeping stub"
-        ostr.puts hash
-        return true
-      end
-
-      # Reaching here implies that cache_obj_path exists
-      STDERR.puts "#{hash}: expanding" if info_output
-      File.open(cache_obj_path, 'rb') do |ostr|
-        if hash != copy_hashed(STDOUT,ostr)
-          STDERR.puts "#{hash}: cache object failed hash check"
-          return false
-        end
-      end
-
-      return true
-    end
-
-    # TODO THIS SHOULD GO AS IT'S INCOMPATIBLE WITH DIRECT DOWNLOAD
-    def self.ensure_cached(hash,auto_download)
-      hash.enforce_hash
 
       cache_obj_path = GitMedia.cache_obj_path(hash)
 
-      return cache_obj_path if File.exist?(cache_obj_path) # Early exit if the object is already cached
+      unless File.exist?(cache_obj_path)
+        unless download
+          # Fail and preserve stub
+          STDERR.puts "#{hash}: missing, keeping stub"
+          ostr.puts hash
+          return true # Success (of a sort)
+        end
 
-      unless auto_download
-        STDERR.puts "#{hash}: missing, keeping stub"
-        return nil
+        STDERR.puts "#{hash}: downloading" if info_output
+
+        if directDownload
+          # Download straight to ostr
+          return GitMedia.get_transport.read(hash) do |istr|
+            if hash != copy_hashed(ostr,istr)
+              STDERR.puts "#{hash}: rehash failed during download"
+              next false
+            end
+            next true
+          end
+        end
+
+        # We want to dowload but direct downloads are disabled, so just download to cache
+        unless download_to_cache(cache_obj_path,hash)
+          STDERR.puts "#{hash}: download failed"
+          return false
+        end
+
+        STDERR.puts "#{hash}: downloaded"
       end
+
+      # Getting here implies that the matching object is in the cache, so expand it
+      STDERR.puts "#{hash}: expanding" if info_output
+      return File.open(cache_obj_path, 'rb') do |ostr|
+        if hash != copy_hashed(STDOUT,ostr)
+          STDERR.puts "#{hash}: cache object failed hash check"
+          next false
+        end
+
+        next true
+      end
+    end
+
+    def self.download_to_cache(cache_obj_path,hash)
+      hash.enforce_hash
 
       GitMedia.get_transport.read(hash) do |istr|
         File.open(cache_obj_path, 'wb') do |ostr|
@@ -114,13 +126,7 @@ module GitMedia
         end
       end
 
-      unless File.exist?(cache_obj_path)
-        STDERR.puts "#{hash}: download failed"
-        return nil
-      end
-
-      STDERR.puts "#{hash}: downloaded"
-      return cache_obj_path
+      return File.exist?(cache_obj_path)
     end
 
     def self.aborted?
@@ -131,17 +137,6 @@ module GitMedia
 
     def self.check_abort
       exit 1 if aborted?
-    end
-
-    def self.pull(ostr,hash)
-      return GitMedia.get_transport.read(hash) do |istr|
-        if hash != copy_hashed(ostr,istr)
-          STDERR.puts "#{hash}: rehash failed during download"
-          next false
-        end
-
-        next true
-      end
     end
 
     def self.push(hash,istr)
