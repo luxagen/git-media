@@ -26,7 +26,7 @@ module GitMedia
 
         puts "#{hash}: expanding to #{tree_file} [#{(index+1).to_s}/#{strCount}]" if info_output
         File.open(tree_file,'wb') do |ostr|
-          GitMedia::Helpers.expand(ostr,hash,true,info_output)
+          GitMedia::Helpers.get_object(ostr,hash,true,info_output)
         end
       end
     end

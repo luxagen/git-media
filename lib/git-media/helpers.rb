@@ -64,7 +64,7 @@ module GitMedia
       return hashfunc.hexdigest.enforce_hash
     end
 
-    def self.expand(ostr,hash,download,info_output)
+    def self.get_object(ostr,hash,download,info_output)
       hash.enforce_hash
 
       download  ||=  'true' == `git config git-media.autodownload`.chomp.downcase
