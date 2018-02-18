@@ -67,7 +67,7 @@ module GitMedia
     def self.expand(ostr,hash,download,info_output)
       hash.enforce_hash
 
-      download ||== `git config git-media.autodownload`.chomp.downcase
+      download  ||=  'true' == `git config git-media.autodownload`.chomp.downcase
       directDownload  =  'true' == `git config git-media.directdownload`.chomp.downcase
 
       cache_obj_path = GitMedia.cache_obj_path(hash)
@@ -82,15 +82,14 @@ module GitMedia
 
         STDERR.puts "#{hash}: downloading" if info_output
 
+        # We want to download and direct downloads are enabled, so download straight to ostr
         if directDownload
-          # Download straight to ostr
-          return GitMedia.get_transport.read(hash) do |istr|
-            if hash != copy_hashed(ostr,istr)
-              STDERR.puts "#{hash}: rehash failed during download"
-              next false
-            end
-            next true
+          unless download_from_store(ostr,hash)
+            STDERR.puts "#{hash}: download failed"
+            return false
           end
+
+          return true
         end
 
         # We want to dowload but direct downloads are disabled, so just download to cache
@@ -114,16 +113,27 @@ module GitMedia
       end
     end
 
-    def self.download_to_cache(cache_obj_path,hash)
+    def self.download_from_store(ostr,hash)
       hash.enforce_hash
 
-      GitMedia.get_transport.read(hash) do |istr|
-        File.open(cache_obj_path, 'wb') do |ostr|
-          if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
+      begin
+        return GitMedia.get_transport.read(hash) do |istr|
+          if hash != copy_hashed(ostr,istr)
             STDERR.puts "#{hash}: rehash failed during download"
             exit 1
           end
+          next true
         end
+      rescue
+        return false
+      end
+    end
+
+    def self.download_to_cache(cache_obj_path,hash)
+      hash.enforce_hash
+
+      File.open(cache_obj_path, 'wb') do |ostr|
+        return false unless download_from_store(ostr,hash)
       end
 
       return File.exist?(cache_obj_path)
