@@ -1,9 +1,11 @@
 require 'digest/sha1'
 
+GM_HASH_REGEX=/^[0-9a-f]{40}\z/
+
 class String
 
   def hash?
-    return self if self && self.match(/^[0-9a-f]{40}\z/) # Must be truthy, exactly 40 caracters long, and contain only lowercase hex
+    return self if self && self.match(GM_HASH_REGEX) # Must be truthy, exactly 40 caracters long, and contain only lowercase hex
   end
 
   def enforce_hash
@@ -16,7 +18,7 @@ class String
     # TODO: Maybe add some additional marker in the files like
     # "[hex string]:git-media"
     # to really be able to say that a file is a stub
-    return self[0..-2] if self && self.match(/^[0-9a-f]{40}\n\z/)
+    return self[0..-2] if self && self[-2]=="\n" && self[0..-2].match(/^[0-9a-f]{40}\z/)
   end
 
 end

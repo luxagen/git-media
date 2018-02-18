@@ -46,11 +46,12 @@ module GitMedia
       end
 
       def list(intersect,excludeFrom)
-        results =  `ls #{@path} -p 2>/dev/null | grep -v /$`
+        upstream =  `ls #{@path}/ -1ap 2>/dev/null`.split("\n").select { |f| f.match(GM_HASH_REGEX) }.to_set
 
-        STDERR.puts "local store '#{@path}' is inaccessible" if $?.exitstatus > 0
-
-        upstream = results.split("\n").to_set;
+        if 0 != $?.exitstatus
+          STDERR.puts "local store '#{@path}' is inaccessible" 
+          exit 1
+        end
 
         intersected  =  intersect ? upstream&intersect : upstream
 
