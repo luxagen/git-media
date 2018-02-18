@@ -26,7 +26,7 @@ module GitMedia
 
         puts "#{hash}: expanding to #{tree_file} [#{(index+1).to_s}/#{strCount}]" if info_output
         File.open(tree_file,'wb') do |ostr|
-          GitMedia::Helpers.get_object(ostr,hash,true,info_output)
+          GitMedia.get_object(ostr,hash,true,info_output)
         end
       end
     end
@@ -60,7 +60,7 @@ module GitMedia
       unpushed_files.each_with_index do |hash, index|
         strIdx = (index+1).to_s
         puts "#{hash}: uploading [#{strIdx}/#{strCount}]"
-        GitMedia::Helpers.push(
+        GitMedia.push(
           hash,
           File.open(
             File.join(GitMedia.cache_path, hash),
