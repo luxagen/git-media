@@ -64,6 +64,34 @@ module GitMedia
       return hashfunc.hexdigest.enforce_hash
     end
 
+    def self.expand(ostr,hash,autoDownload,info_output)
+      hash.enforce_hash
+
+      directDownload  =  'true' == `git config git-media.directdownload`.chomp.downcase
+
+      if autoDownload&&directDownload
+        STDERR.puts "#{hash}: downloading" if info_output
+        return pull(ostr,hash)
+      end
+
+        unless cache_obj_path = ensure_cached(hash,autoDownload) # TODO make ensure_cached always download and put autoDownload check here
+        STDERR.puts "#{hash}: missing, keeping stub"
+        ostr.puts hash
+        return true
+      end
+
+      # Reaching here implies that cache_obj_path exists
+      STDERR.puts "#{hash}: expanding" if info_output
+      File.open(cache_obj_path, 'rb') do |ostr|
+        if hash != copy_hashed(STDOUT,ostr)
+          STDERR.puts "#{hash}: cache object failed hash check"
+          return false
+        end
+      end
+
+      return true
+    end
+
     # TODO THIS SHOULD GO AS IT'S INCOMPATIBLE WITH DIRECT DOWNLOAD
     def self.ensure_cached(hash,auto_download)
       hash.enforce_hash
@@ -93,22 +121,6 @@ module GitMedia
 
       STDERR.puts "#{hash}: downloaded"
       return cache_obj_path
-    end
-
-    def self.expand(tree_file,hash)
-      cache_obj_path = GitMedia.cache_obj_path(hash)
-      return unless File.exist?(cache_obj_path)
-
-      File.open(cache_obj_path, 'rb') do |istr|
-        File.open(tree_file, 'wb') do |ostr|
-          unless hash == GitMedia::Helpers.copy_hashed(ostr,istr)
-            STDERR.puts "#{hash}: rehash failed during download"
-            return false
-          end
-        end
-      end
-
-      return true
     end
 
     def self.aborted?

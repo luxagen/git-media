@@ -19,15 +19,16 @@ module GitMedia
       status = GitMedia::Status.find_references
       strCount = status[:to_expand].length.to_s
 
+      info_output=true
+
       status[:to_expand].each_with_index do |tuple, index|
         tree_file = tuple[0]
         hash = tuple[1].enforce_hash
 
-        return 1 unless cache_obj_path = GitMedia::Helpers.ensure_cached(hash,true)
-
-        strIdx = (index+1).to_s
-        puts "#{hash}: expanding to #{tree_file} [#{strIdx}/#{strCount}]"
-        GitMedia::Helpers.expand(tree_file,hash)
+        puts "#{hash}: expanding to #{tree_file} [#{(index+1).to_s}/#{strCount}]" if info_output
+        File.open(tree_file,'wb') do |ostr|
+          GitMedia::Helpers.expand(ostr,hash,true,info_output)
+        end
       end
     end
 
