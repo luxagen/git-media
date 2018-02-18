@@ -28,9 +28,7 @@ module GitMedia
 
         begin
           return File.open(File.join(@path, hash), 'rb') do |istr|
-            STDERR.puts "before yield"
             value = yield istr
-            STDERR.puts "after yield"
             next value
           end
         rescue
@@ -49,9 +47,7 @@ module GitMedia
 
         begin
           result = File.open(temp,'wb') do |ostr|
-            STDERR.puts 'before yield'
             value = yield ostr
-            STDERR.puts 'after yield'
             next value
           end
         rescue
