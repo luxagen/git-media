@@ -32,7 +32,7 @@ module GitMedia
         false
       end
 
-      def list(set)
+      def list(intersect,excludeFrom)
         false
       end
     end

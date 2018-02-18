@@ -45,7 +45,7 @@ module GitMedia
         return result
       end
 
-      def list(intersect,exclude_from)
+      def list(intersect,excludeFrom)
         results =  `ls #{@path} -p 2>/dev/null | grep -v /$`
 
         STDERR.puts "local store '#{@path}' is inaccessible" if $?.exitstatus > 0
@@ -54,7 +54,7 @@ module GitMedia
 
         intersected  =  intersect ? upstream&intersect : upstream
 
-        return exclude_from ? exclude_from-intersected : intersected
+        return excludeFrom ? excludeFrom-intersected : intersected
       end
 
     end
