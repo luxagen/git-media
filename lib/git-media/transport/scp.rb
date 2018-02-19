@@ -38,10 +38,8 @@ module GitMedia
 #        error_inaccessible unless Dir.exist?(@path)
 
         begin
-          command = "scp #{@scpport} \"#{@user}@#{@host}:#{File.join(@path, hash)}\" /dev/stdout"
-          return IO.popen("scp -q path /dev/stdout 2>/dev/null", :external_encoding=>"EUC-JP")
-          
-          return File.open(File.join(@path, hash), 'rb') do |istr|
+#          command = "scp -q #{@scpport} \"#{@user}@#{@host}:#{File.join(@path, hash)}\" /dev/stdout 2>/dev/null"
+          return IO.popen("scp -q #{@scpport} \"#{@user}@#{@host}:#{File.join(@path, hash)}\" /dev/stdout 2>/dev/null", 'rb') do |istr|
             value = yield istr
             next value
           end
