@@ -37,14 +37,17 @@ module GitMedia
       def read(hash)
 #        error_inaccessible unless Dir.exist?(@path)
 
-#        begin
-#          return File.open(File.join(@path, hash), 'rb') do |istr|
-#            value = yield istr
-#            next value
-#          end
-#        rescue
-#          STDERR.puts "#{hash}: remote object inaccessible"
-#        end
+        begin
+          command = "scp #{@scpport} \"#{@user}@#{@host}:#{File.join(@path, hash)}\" /dev/stdout"
+          return IO.popen("scp -q path /dev/stdout 2>/dev/null", :external_encoding=>"EUC-JP")
+          
+          return File.open(File.join(@path, hash), 'rb') do |istr|
+            value = yield istr
+            next value
+          end
+        rescue
+          STDERR.puts "#{hash}: remote object inaccessible"
+        end
 
         return false
       end
