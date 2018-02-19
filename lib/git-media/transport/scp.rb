@@ -34,6 +34,53 @@ module GitMedia
         end
       end
 
+      def read(hash)
+#        error_inaccessible unless Dir.exist?(@path)
+
+#        begin
+#          return File.open(File.join(@path, hash), 'rb') do |istr|
+#            value = yield istr
+#            next value
+#          end
+#        rescue
+#          STDERR.puts "#{hash}: remote object inaccessible"
+#        end
+
+        return false
+      end
+
+      def write(hash)
+#        error_inaccessible unless Dir.exist?(@path)
+
+#        temp = File.join(@path,'obj.temp')
+
+#        result=false
+
+#        begin
+#          result = File.open(temp,'wb') do |ostr|
+#            value = yield ostr
+#            next value
+#          end
+#        rescue
+#          STDERR.puts "#{hash}: unable to create remote object"
+#        end
+
+#        FileUtils.mv(temp,File.join(@path, hash),:force => true) if result
+#        return result
+      end
+
+      def list(intersect,excludeFrom)
+        upstream = `ssh #{@user}@#{@host} #{@sshport} ls #{@path}/ -1ap 2>/dev/null`.split("\n").select { |f| f.match(GM_HASH_REGEX) }.to_set
+
+        error_inaccessible if 0 != $?.exitstatus
+
+        intersected  =  intersect ? upstream&intersect : upstream
+
+        return excludeFrom ? excludeFrom-intersected : intersected
+      end
+
+      #################################################################
+
       def is_in_store?(obj)
         if `ssh #{@user}@#{@host} #{@sshport} [ -f "#{obj}" ] && echo 1 || echo 0`.chomp == "1"
           STDERR.puts(obj + " exists")
