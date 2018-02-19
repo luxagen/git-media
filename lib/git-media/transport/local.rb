@@ -59,7 +59,7 @@ module GitMedia
       end
 
       def list(intersect,excludeFrom)
-        upstream =  `ls #{@path}/ -1ap 2>/dev/null`.split("\n").select { |f| f.match(GM_HASH_REGEX) }.to_set
+        upstream = `ls #{@path}/ -1ap 2>/dev/null`.split("\n").select { |f| f.match(GM_HASH_REGEX) }.to_set
 
         error_inaccessible if 0 != $?.exitstatus
 
