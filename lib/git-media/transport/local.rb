@@ -5,7 +5,7 @@ require 'set'
 # Implements local (accessible via a filesystem path) object store
 
 # git-media.transport local
-# git-media.localpath /opt/media
+# git-media.path /opt/media
 
 module GitMedia
   module Transport
@@ -17,9 +17,9 @@ module GitMedia
       end
 
       def initialize
-        @path = `git config git-media.localpath`.chomp
+        @path = `git config git-media.path`.chomp
         if @path === ""
-          raise "git-media.localpath not set for local transport"
+          raise "git-media.path not set for local transport"
         end
       end
 
