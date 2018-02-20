@@ -35,16 +35,16 @@ or in `clone/.git/config` (for per-repo settings).
 
 ```ini
 [git-media]
-	transport = <scp|local|s3|atmos|webdav>
+	transport = <local|ssh|s3|atmos|webdav>
 	autodownload = <true|false>
 
-	# settings for scp transport
-	scpuser = <user>
-	scphost = <host>
-	scppath = <path_on_remote_server>
-
 	# settings for local transport
-	localpath = <local_filesystem_path>
+	path = <local_filesystem_path>
+
+	# settings for SSH transport
+	user = <user>
+	host = <host>
+	path = <path_on_remote_server>
 
 	# settings for s3 transport
 	s3bucket = <name_of_bucket>
