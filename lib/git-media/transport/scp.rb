@@ -14,36 +14,30 @@ module GitMedia
     class Scp < Base
 
       def initialize
-        @user = `git config git-media.scpuser`.chomp
-        @host = `git config git-media.scphost`.chomp
         @path = `git config git-media.scppath`.chomp
-        port = `git config git-media.scpport`.chomp
-        if @user === ""
-          raise "git-media.scpuser not set for scp transport"
-        end
-        if @host === ""
-          raise "git-media.scphost not set for scp transport"
-        end
-        if @path === ""
+        if ''===@path
           raise "git-media.scppath not set for scp transport"
         end
 
-        if port && ''!=port
-          @sshcmd = "ssh -p#{port}"
-          @scpcmd = "scp -P#{port}"
-        else
-          @sshcmd='ssh '
-          @scpcmd='scp '
+        user = `git config git-media.scpuser`.chomp
+        host = `git config git-media.scphost`.chomp
+        port = `git config git-media.scpport`.chomp
+        if ''===user
+          raise "git-media.scpuser not set for scp transport"
         end
+        if ''===host
+          raise "git-media.scphost not set for scp transport"
+        end
+        portsw  =  ''==port ? '' : " -p#{port}"
+        @sshcmd = "ssh#{portsw} #{user}@#{host}"
       end
 
       def read(hash)
 #        error_inaccessible unless Dir.exist?(@path)
+        # TODO RETURN CODES
 
         begin
-          # TODO RETURN CODES
-          cmd="#{@scpcmd} -q \"#{@user}@#{@host}:#{File.join(@path, hash)}\" /dev/stdout 2>/dev/null"
-#          STDERR.puts cmd
+          cmd="#{@sshcmd} 'cat <\"#{File.join(@path,hash)}\" 2>/dev/null'"
           return IO.popen(cmd,'rb') do |istr|
             value = yield istr
             next value
@@ -57,12 +51,12 @@ module GitMedia
 
       def write(hash)
 #        error_inaccessible unless Dir.exist?(@path)
+        # TODO RETURN CODES
 
         begin
-          cmd="#{@scpcmd} -q /dev/stdin \"#{@user}@#{@host}:#{File.join(@path, hash)}\" 2>/dev/null"
-          STDERR.puts cmd
+          cmd="#{@sshcmd} 'cat >\"#{File.join(@path,hash)}\" 2>/dev/null'"
           return IO.popen(cmd,'wb') do |ostr|
-            value = yield istr
+            value = yield ostr
             next value
           end
         rescue
@@ -73,65 +67,14 @@ module GitMedia
       end
 
       def list(intersect,excludeFrom)
-        upstream = `#{@sshcmd} #{@user}@#{@host} ls #{@path}/ -1ap 2>/dev/null`.split("\n").select { |f| f.match(GM_HASH_REGEX) }.to_set
+        cmd = "#{@sshcmd} ls '#{@path}/' -1ap 2>/dev/null"
+        upstream = `#{cmd}`.split("\n").select { |f| f.match(GM_HASH_REGEX) }.to_set
 
         error_inaccessible if 0 != $?.exitstatus
 
         intersected  =  intersect ? upstream&intersect : upstream
 
         return excludeFrom ? excludeFrom-intersected : intersected
-      end
-
-      #################################################################
-
-      def is_in_store?(obj)
-        if `ssh #{@user}@#{@host} #{@sshport} [ -f "#{obj}" ] && echo 1 || echo 0`.chomp == "1"
-          STDERR.puts(obj + " exists")
-          return true
-        else
-          STDERR.puts(obj + " doesn't exist")
-          return false
-        end
-      end
-
-      def read?
-        return true
-      end
-
-      def get_file(hash, to_file)
-        from_file = @user+"@"+@host+":"+File.join(@path, hash)
-        `scp #{@scpport} "#{from_file}" "#{to_file}"`
-        if $? == 0
-          STDERR.puts(hash + " downloaded")
-          return true
-        end
-        STDERR.puts("#{hash}: download failed")
-        return false
-      end
-
-      def write?
-        return true
-      end
-
-      def put_file(hash, from_file)
-        to_file = @user+"@"+@host+":"+File.join(@path, hash)
-        `scp #{@scpport} "#{from_file}" "#{to_file}"`
-        if $? == 0
-          STDERR.puts(hash + " uploaded")
-          return true
-        end
-        STDERR.puts(hash + " upload failed")
-        return false
-      end
-      
-      def get_unpushed(files)
-        results =  `ssh #{@user}@#{@host} #{@sshport} ls #{@path} -p | grep -v /`
-
-        keys  = results.split("\n").to_set;
-
-        files.select do |f|
-          !keys.include?(f)
-        end
       end
       
     end
