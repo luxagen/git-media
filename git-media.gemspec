@@ -37,12 +37,12 @@ Gem::Specification.new do |s|
     "lib/git-media/status.rb",
     "lib/git-media/sync.rb",
     "lib/git-media/transport.rb",
-    "lib/git-media/transport/atmos_client.rb",
-    "lib/git-media/transport/box.rb",
     "lib/git-media/transport/local.rb",
-    "lib/git-media/transport/s3.rb",
-    "lib/git-media/transport/scp.rb",
-    "lib/git-media/transport/webdav.rb",
+    "lib/git-media/transport/ssh.rb",
+#    "lib/git-media/transport/atmos_client.rb",
+#    "lib/git-media/transport/box.rb",
+#    "lib/git-media/transport/s3.rb",
+#    "lib/git-media/transport/webdav.rb",
     "spec/media_spec.rb",
     "spec/spec_helper.rb"
   ]

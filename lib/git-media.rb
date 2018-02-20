@@ -40,9 +40,9 @@ module GitMedia
     when ""
       raise "git-media.transport not set"
 
-    when "scp"
-      require 'git-media/transport/scp'
-      return GitMedia::Transport::Scp.new
+    when "ssh"
+      require 'git-media/transport/ssh'
+      return GitMedia::Transport::SSH.new
     when "local"
       require 'git-media/transport/local'
       return GitMedia::Transport::Local.new
