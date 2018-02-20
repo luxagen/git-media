@@ -28,9 +28,12 @@ module GitMedia
           raise "git-media.scppath not set for scp transport"
         end
 
-        if port
-          @sshport = "-p#{port}"
-          @scpport = "-P#{port}"
+        if port && ''!=port
+          @sshcmd = "ssh -p#{port}"
+          @scpcmd = "scp -P#{port}"
+        else
+          @sshcmd='ssh '
+          @scpcmd='scp '
         end
       end
 
@@ -38,8 +41,10 @@ module GitMedia
 #        error_inaccessible unless Dir.exist?(@path)
 
         begin
-#          command = "scp -q #{@scpport} \"#{@user}@#{@host}:#{File.join(@path, hash)}\" /dev/stdout 2>/dev/null"
-          return IO.popen("scp -q #{@scpport} \"#{@user}@#{@host}:#{File.join(@path, hash)}\" /dev/stdout 2>/dev/null", 'rb') do |istr|
+          # TODO RETURN CODES
+          cmd="#{@scpcmd} -q \"#{@user}@#{@host}:#{File.join(@path, hash)}\" /dev/stdout 2>/dev/null"
+#          STDERR.puts cmd
+          return IO.popen(cmd,'rb') do |istr|
             value = yield istr
             next value
           end
@@ -53,25 +58,22 @@ module GitMedia
       def write(hash)
 #        error_inaccessible unless Dir.exist?(@path)
 
-#        temp = File.join(@path,'obj.temp')
+        begin
+          cmd="#{@scpcmd} -q /dev/stdin \"#{@user}@#{@host}:#{File.join(@path, hash)}\" 2>/dev/null"
+          STDERR.puts cmd
+          return IO.popen(cmd,'wb') do |ostr|
+            value = yield istr
+            next value
+          end
+        rescue
+          STDERR.puts "#{hash}: cannot create remote object"
+        end
 
-#        result=false
-
-#        begin
-#          result = File.open(temp,'wb') do |ostr|
-#            value = yield ostr
-#            next value
-#          end
-#        rescue
-#          STDERR.puts "#{hash}: unable to create remote object"
-#        end
-
-#        FileUtils.mv(temp,File.join(@path, hash),:force => true) if result
-#        return result
+        return false
       end
 
       def list(intersect,excludeFrom)
-        upstream = `ssh #{@user}@#{@host} #{@sshport} ls #{@path}/ -1ap 2>/dev/null`.split("\n").select { |f| f.match(GM_HASH_REGEX) }.to_set
+        upstream = `#{@sshcmd} #{@user}@#{@host} ls #{@path}/ -1ap 2>/dev/null`.split("\n").select { |f| f.match(GM_HASH_REGEX) }.to_set
 
         error_inaccessible if 0 != $?.exitstatus
 
