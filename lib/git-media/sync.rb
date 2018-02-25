@@ -25,9 +25,22 @@ module GitMedia
         hash = tuple[1].enforce_hash
 
         puts "#{hash}: expanding to #{tree_file} [#{(index+1).to_s}/#{strCount}]" if info_output
-        File.open(tree_file,'wb') do |ostr|
-          GitMedia.get_object(ostr,hash,true,info_output)
+
+        # Copy the data to a temporary filename within the working tree while hashing it
+        tempfile = Tempfile.new('media','.',:binmode => true)
+
+        unless GitMedia.get_object(tempfile,hash,true,info_output)
+          # It's apparently good practice to do this explicitly rather than relying on the GC
+          tempfile.close
+          tempfile.unlink
+          next
         end
+
+        # We got here, so we have a complete temp copy and a valid hash; explicitly close the tempfile to prevent 
+        # autodeletion, then give it its final name (the hash)
+        tempfile.close
+        FileUtils.mv(tempfile.path,tree_file)
+
       end
     end
 
