@@ -3,6 +3,7 @@ require 'bundler/setup'
 
 require 'trollop'
 require 'fileutils'
+require 'tempfile'
 
 require 'git-media/helpers'
 
@@ -230,8 +231,8 @@ EOF
 
       # Getting here implies that the matching object is in the cache, so expand it
       STDERR.puts "#{hash}: expanding" if info_output
-      return File.open(cache_obj_path, 'rb') do |ostr|
-        if hash != GitMedia::Helpers.copy_hashed(STDOUT,ostr)
+      return File.open(cache_obj_path, 'rb') do |istr|
+        if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
           STDERR.puts "#{hash}: cache object failed hash check"
           next false
         end
@@ -247,7 +248,7 @@ EOF
         return get_transport.read(hash) do |istr|
           if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
             STDERR.puts "#{hash}: rehash failed during download"
-            exit 1
+            next false
           end
           next true
         end
@@ -259,11 +260,22 @@ EOF
     def self.download_to_cache(cache_obj_path,hash)
       hash.enforce_hash
 
-      File.open(cache_obj_path, 'wb') do |ostr|
-        return false unless download_from_store(ostr,hash)
+      # Copy the data to a temporary filename within the local cache while hashing it
+      tempfile = Tempfile.new('media',cache_path,:binmode => true)
+
+      unless download_from_store(tempfile,hash)
+        # It's apparently good practice to do this explicitly rather than relying on the GC
+        tempfile.close
+        tempfile.unlink
+        return false
       end
 
-      return File.exist?(cache_obj_path)
+      # We got here, so we have a complete temp copy and a valid hash; explicitly close the tempfile to prevent 
+      # autodeletion, then give it its final name (the hash)
+      tempfile.close
+      FileUtils.mv(tempfile.path,cache_obj_path)
+
+      return true
     end
 
     def self.push(hash,istr)
