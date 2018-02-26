@@ -12,6 +12,11 @@ module GitMedia
       # Read the first data block
       prefix = input.read(GM_BUFFER_BYTES)
 
+      unless prefix
+        STDERR.puts "git-media filter-clean: skipping empty file" if info_output
+        return 0
+      end
+
       if hash = prefix.stub2hash
         # If the pipe broke (rather than the input legitimately ending), the cached object is truncated and the hash is 
         # invalid; return nothing and allow the temp file to auto-delete
