@@ -195,6 +195,12 @@ EOF
     def self.get_object(ostr,hash,download,info_output)
       hash.enforce_hash
 
+      if ('da39a3ee5e6b4b0d3255bfef95601890afd80709'==hash)
+        # This is the null hash - generate an empty stream by exiting immediately with a warning
+        STDERR.puts 'git-media: empty-object reference found'
+        return true
+      end
+
       download  ||=  'true' == `git config git-media.autodownload`.chomp.downcase
       directDownload  =  'true' == `git config git-media.directdownload`.chomp.downcase
 
