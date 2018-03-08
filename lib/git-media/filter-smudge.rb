@@ -11,7 +11,7 @@ module GitMedia
 
       unless hash = prefix.stub2hash
         # If the file isn't a stub, just pass it through
-        STDERR.puts 'not a git-media stub' if info_output
+        STDERR.puts 'git-media: not a stub' if info_output
         GitMedia::Helpers.copy(STDOUT,STDIN,prefix)
         return 0
       end
