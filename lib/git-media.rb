@@ -198,7 +198,7 @@ EOF
       if ('da39a3ee5e6b4b0d3255bfef95601890afd80709'==hash)
         # This is the null hash - generate an empty stream by exiting immediately with a warning
         STDERR.puts 'git-media: empty-object reference found'
-        return true
+        return
       end
 
       download  ||=  'true' == `git config git-media.autodownload`.chomp.downcase
@@ -207,30 +207,15 @@ EOF
       cache_obj_path = cache_obj_path(hash)
 
       unless File.exist?(cache_obj_path)
-        unless download
-          # Fail and preserve stub
-          STDERR.puts "#{hash}: missing, keeping stub"
-          ostr.puts hash
-          return true # Success (of a sort)
-        end
+        raise "#{hash}: missing, keeping stub" unless download
 
         STDERR.puts "#{hash}: downloading" if info_output
 
         # We want to download and direct downloads are enabled, so download straight to ostr
-        if directDownload
-          unless download_from_store(ostr,hash)
-            STDERR.puts "#{hash}: download failed"
-            return false
-          end
-
-          return true
-        end
+        return download_from_store(ostr,hash) if directDownload
 
         # We want to dowload but direct downloads are disabled, so just download to cache
-        unless download_to_cache(cache_obj_path,hash)
-          STDERR.puts "#{hash}: download failed"
-          return false
-        end
+        raise "#{hash}: download failed" unless download_to_cache(cache_obj_path,hash)
 
         STDERR.puts "#{hash}: downloaded"
       end
@@ -238,28 +223,16 @@ EOF
       # Getting here implies that the matching object is in the cache, so expand it
       STDERR.puts "#{hash}: expanding" if info_output
       return File.open(cache_obj_path, 'rb') do |istr|
-        if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
-          STDERR.puts "#{hash}: cache object failed hash check"
-          next false
-        end
-
-        next true
+        raise "#{hash}: cache object failed hash check" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
       end
     end
 
     def self.download_from_store(ostr,hash)
       hash.enforce_hash
 
-      begin
-        return get_transport.read(hash) do |istr|
-          if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
-            STDERR.puts "#{hash}: rehash failed during download"
-            next false
-          end
-          next true
-        end
-      rescue
-        return false
+      return get_transport.read(hash) do |istr|
+        raise "#{hash}: rehash failed during download" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
+        next true
       end
     end
 
@@ -269,28 +242,24 @@ EOF
       # Copy the data to a temporary filename within the local cache while hashing it
       tempfile = Tempfile.new('media',cache_path,:binmode => true)
 
-      unless download_from_store(tempfile,hash)
+      begin
+        download_from_store(tempfile,hash)
+      rescue
         # It's apparently good practice to do this explicitly rather than relying on the GC
         tempfile.close
         tempfile.unlink
-        return false
+        raise
       end
 
       # We got here, so we have a complete temp copy and a valid hash; explicitly close the tempfile to prevent 
       # autodeletion, then give it its final name (the hash)
       tempfile.close
       FileUtils.mv(tempfile.path,cache_obj_path)
-
-      return true
     end
 
     def self.push(hash,istr)
       return get_transport.write(hash) do |ostr|
-        if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
-          STDERR.puts "#{hash}: rehash failed during upload"
-          next false
-        end
-
+        raise "#{hash}: rehash failed during upload" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
         next true
       end
     end
