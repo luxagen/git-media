@@ -12,8 +12,7 @@ module GitMedia
     class Local < Base
 
       def error_inaccessible
-        STDERR.puts "local store '#{@path}' is inaccessible"
-        exit 1
+        raise "local store '#{@path}' is inaccessible"
       end
 
       def initialize
@@ -32,10 +31,9 @@ module GitMedia
             next value
           end
         rescue
-          STDERR.puts "#{hash}: remote object inaccessible"
         end
 
-        return false
+        raise "#{hash}: remote object inaccessible"
       end
 
       def write(hash)
@@ -51,7 +49,7 @@ module GitMedia
             next value
           end
         rescue
-          STDERR.puts "#{hash}: unable to create remote object"
+          raise "#{hash}: unable to create remote object"
         end
 
         FileUtils.mv(temp,File.join(@path, hash),:force => true) if result

@@ -35,9 +35,6 @@ module GitMedia
       end
 
       def read(hash)
-#        error_inaccessible unless Dir.exist?(@path)
-        # TODO RETURN CODES
-
         begin
           cmd="#{@sshcmd} 'cat <\"#{File.join(@path,hash)}\" 2>/dev/null'"
           return IO.popen(cmd,'rb') do |istr|
@@ -45,10 +42,9 @@ module GitMedia
             next value
           end
         rescue
-          STDERR.puts "#{hash}: remote object inaccessible"
         end
 
-        return false
+        raise "#{hash}: remote object inaccessible"
       end
 
       def write(hash)
@@ -62,10 +58,9 @@ module GitMedia
             next value
           end
         rescue
-          STDERR.puts "#{hash}: cannot create remote object"
         end
 
-        return false
+        raise "#{hash}: cannot create remote object"
       end
 
       def list(intersect,excludeFrom)

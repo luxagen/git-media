@@ -23,13 +23,12 @@ module GitMedia
       autoDownload  =  "true" == `git config git-media.autodownload`.chomp.downcase
 
       begin
-        return 0 if GitMedia.get_object(STDOUT,hash,autoDownload,info_output)
-      rescue
+        GitMedia.get_object(STDOUT,hash,autoDownload,info_output)
+      rescue Exception => e
         puts hash
-        raise
+        STDERR.puts e
+        return 1
       end
-
-      return 1 # unreachable
     end
 
   end

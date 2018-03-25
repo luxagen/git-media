@@ -29,11 +29,13 @@ module GitMedia
         # Copy the data to a temporary filename within the working tree while hashing it
         tempfile = Tempfile.new('media','.',:binmode => true)
 
-        unless GitMedia.get_object(tempfile,hash,true,info_output)
+        begin
+          GitMedia.get_object(tempfile,hash,true,info_output)
+        rescue
           # It's apparently good practice to do this explicitly rather than relying on the GC
           tempfile.close
           tempfile.unlink
-          next
+          raise
         end
 
         # We got here, so we have a complete temp copy and a valid hash; explicitly close the tempfile to prevent 

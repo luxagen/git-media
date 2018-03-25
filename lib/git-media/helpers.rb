@@ -65,7 +65,7 @@ module GitMedia
     end
 
     def self.aborted?
-      # I really really hate having to do this, but it's a reasonably reliable kludge to give a dying git parent process time to 
+      # I really really hate having to do this, but it's a reasonably reliable kludge to give a dying git parent process time to exit completely
       sleep 0.1
       return 1 == Process.ppid # TODO make this look for any reparenting rather than PPID 1
     end
