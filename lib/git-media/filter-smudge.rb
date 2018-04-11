@@ -9,6 +9,11 @@ module GitMedia
 
       prefix = STDIN.read(GM_BUFFER_BYTES)
 
+      unless prefix
+        STDERR.puts "git-media filter-smudge: skipping empty file" if info_output
+        return 0
+      end
+
       unless hash = prefix.stub2hash
         # If the file isn't a stub, just pass it through
         STDERR.puts 'git-media: not a stub' if info_output
