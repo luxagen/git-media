@@ -28,7 +28,7 @@ module GitMedia
           if size == tree_size.to_i or size == tree_size.to_i + 1
             # TODO: read in the data and verify that it's a sha + newline
             fname = fname.tr("\\","") #remove backslash
-            content = File.read(fname,length,41,mode:"rb")
+            content = File.read(fname,41,0,mode:"rb")
             if content  &&  hash = content.stub2hash
               references[:to_expand] << [fname, hash]
             end
