@@ -17,36 +17,13 @@ module GitMedia
         return 0
       end
 
-      if hash = prefix.stub2hash
-        # If the pipe broke (rather than the input legitimately ending), the cached object is truncated and the hash is 
-        # invalid; return nothing and allow the temp file to auto-delete
-        GitMedia::Helpers.check_abort
-
-        output.write(prefix) # Pass the stub through
-        STDERR.puts "#{hash}: leaving stub" if info_output
-        return 0
-      end
-
-      start = Time.now
-
       # Copy the data to a temporary filename within the local cache while hashing it
-      tempfile = Tempfile.new('media', GitMedia.cache_path, :binmode => true)
-      hash = GitMedia::Helpers.copy_hashed(tempfile,input,prefix)
+      hash = GitMedia::Helpers.copy_hashed(output,input,prefix)
       return 1 unless hash
 
       # If the pipe broke (rather than the input legitimately ending), the cached object is truncated and the hash is 
       # invalid; return nothing and allow the temp file to auto-delete
       GitMedia::Helpers.check_abort
-
-      # We got here, so we have a complete temp copy and a valid hash; explicitly close the tempfile to prevent 
-      # autodeletion, then give it its final name (the hash)
-      tempfile.close
-      FileUtils.mv(tempfile.path, GitMedia.cache_obj_path(hash))
-
-      strElapsed = (Time.now - start).to_s
-
-      output.puts hash # Substitute stub for data
-      STDERR.puts "#{hash}: cached in #{strElapsed} seconds" if info_output
 
       return 0
     end
