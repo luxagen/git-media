@@ -3,20 +3,20 @@ require 'git-media/helpers'
 module GitMedia
   module FilterSmudge
 
-    def self.run!(info_output=true)
+    def self.run!(tree_path, info_output=true)
       STDIN.binmode
       STDOUT.binmode
 
       prefix = STDIN.read(GM_BUFFER_BYTES)
 
       unless prefix
-        STDERR.puts "git-media filter-smudge: skipping empty file" if info_output
+#        STDERR.puts "git-media filter-smudge: skipping empty file" if info_output
         return 0
       end
 
       unless hash = prefix.stub2hash
         # If the file isn't a stub, just pass it through
-        STDERR.puts 'git-media: not a stub' if info_output
+        STDERR.puts "Warning: #{tree_path} is not a stub!" if info_output
         GitMedia::Helpers.copy(STDOUT,STDIN,prefix)
 
         # If the pipe broke (rather than the input legitimately ending), the stream is truncated

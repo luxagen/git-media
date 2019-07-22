@@ -147,7 +147,7 @@ module GitMedia
           return GitMedia::FilterClean.run!
         when "filter-smudge"
           require 'git-media/filter-smudge'
-          return GitMedia::FilterSmudge.run!
+          return GitMedia::FilterSmudge.run!(ARGV.shift)
         when "clear" # parse delete options
           require 'git-media/clear'
           return GitMedia::Clear.run!
