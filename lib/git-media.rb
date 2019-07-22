@@ -144,7 +144,7 @@ module GitMedia
       cmd_opts = case cmd
         when "filter-clean" # parse delete options
           require 'git-media/filter-clean'
-          return GitMedia::FilterClean.run!
+          return GitMedia::FilterClean.run!(ARGV.shift)
         when "filter-smudge"
           require 'git-media/filter-smudge'
           return GitMedia::FilterSmudge.run!(ARGV.shift)

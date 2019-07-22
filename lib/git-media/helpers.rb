@@ -28,6 +28,22 @@ GM_BUFFER_BYTES=1048576
 module GitMedia
   module Helpers
 
+    def self.shorten(hash)
+      return hash[0, 12]
+    end
+
+    def self.print_mapping(ostr, file, hash, suffix='')
+      ostr.puts "  #{shorten(hash)}: #{file}#{suffix}"
+    end
+
+    def self.print_clean(ostr, file, hash, suffix='')
+      ostr.puts "  #{shorten(hash)} <- #{file}#{suffix}"
+    end
+
+    def self.print_smudge(ostr, file, hash, suffix='')
+      ostr.puts "  #{shorten(hash)} -> #{file}#{suffix}"
+    end
+
     def self.copy(ostr,istr,prefix = istr.read(GM_BUFFER_BYTES))
       return nil if !prefix
 
