@@ -51,7 +51,7 @@ module GitMedia
           puts "Count: " + refs[:to_expand].size.to_s
         else
           refs[:to_expand].each do |file, hash|
-            puts "   " + hash[0, 8] + " " + file
+            GitMedia::Helpers.print_mapping(STDOUT, file, hash)
           end
           puts
         end

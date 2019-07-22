@@ -24,7 +24,7 @@ module GitMedia
         tree_file = tuple[0]
         hash = tuple[1].enforce_hash
 
-        puts "#{hash}: expanding to #{tree_file} [#{(index+1).to_s}/#{strCount}]" if info_output
+        GitMedia::Helpers.print_smudge(STDOUT, tree_file, hash, " [#{(index+1).to_s}/#{strCount}]") if info_output
 
         # Copy the data to a temporary filename within the working tree while hashing it
         tempfile = Tempfile.new('media','.',:binmode => true)
