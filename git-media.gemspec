@@ -8,9 +8,9 @@ Gem::Specification.new do |s|
   s.version = "0.1.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Scott Chacon", "Alexander Lebedev"]
-  s.date = "2014-10-20"
-  s.email = "alexander.lebedev@gmail.com"
+  s.authors = ["Scott Chacon", "Alexander Lebedev", "Luxagen"]
+  s.date = "2017-11-16"
+  s.email = "hello@luxagen.com"
   s.executables = ["git-media"]
   s.extra_rdoc_files = [
     "LICENSE",
@@ -46,7 +46,7 @@ Gem::Specification.new do |s|
     "spec/media_spec.rb",
     "spec/spec_helper.rb"
   ]
-  s.homepage = "http://github.com/alebedev/git-media"
+  s.homepage = "http://github.com/luxagen/git-media"
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.28"
   s.summary = "git-media"
