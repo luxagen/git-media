@@ -192,12 +192,12 @@ EOF
     end
   end
 
-    def self.get_object(ostr,hash,download,info_output)
+    def self.get_object(ostr, opath, hash, download, info_output)
       hash.enforce_hash
 
       if ('da39a3ee5e6b4b0d3255bfef95601890afd80709'==hash)
         # This is the null hash - generate an empty stream by exiting immediately with a warning
-        STDERR.puts 'git-media: empty-object reference found'
+        STDERR.puts 'Warning: empty-object reference found!'
         return
       end
 
@@ -206,32 +206,37 @@ EOF
 
       cache_obj_path = cache_obj_path(hash)
 
-      unless File.exist?(cache_obj_path)
-        raise "#{hash}: missing, keeping stub" unless download
+      shorthash = GitMedia::Helpers.shorten(hash)
 
-        STDERR.puts "#{hash}: downloading" if info_output
+      unless File.exist?(cache_obj_path)
+        raise "Warning: #{shorthash} missing from cache!" unless download
+
+        STDERR.puts "  #{shorthash}: downloading" if info_output
 
         # We want to download and direct downloads are enabled, so download straight to ostr
         return download_from_store(ostr,hash) if directDownload
 
         # We want to dowload but direct downloads are disabled, so just download to cache
-        raise "#{hash}: download failed" unless download_to_cache(cache_obj_path,hash)
+        raise "  #{shorthash}: download failed" unless download_to_cache(cache_obj_path,hash)
 
-        STDERR.puts "#{hash}: downloaded"
+        STDERR.puts "  #{shorthash}: downloaded"
       end
 
       # Getting here implies that the matching object is in the cache, so expand it
-      STDERR.puts "#{hash}: expanding" if info_output
+      GitMedia::Helpers.print_smudge(STDERR, opath, hash)
+
       return File.open(cache_obj_path, 'rb') do |istr|
-        raise "#{hash}: cache object failed hash check" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
+        raise "  #{shorthash}: cache object failed hash check" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
       end
     end
 
     def self.download_from_store(ostr,hash)
       hash.enforce_hash
 
+      shorthash = GitMedia::Helpers.shorten(hash)
+
       return get_transport.read(hash) do |istr|
-        raise "#{hash}: rehash failed during download" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
+        raise "  #{shorthash}: rehash failed during download" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
         next true
       end
     end
@@ -258,8 +263,10 @@ EOF
     end
 
     def self.push(hash,istr)
+      shorthash = GitMedia::Helpers.shorten(hash)
+
       return get_transport.write(hash) do |ostr|
-        raise "#{hash}: rehash failed during upload" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
+        raise "#{shorthash}: rehash failed during upload" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
         next true
       end
     end

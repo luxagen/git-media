@@ -30,7 +30,7 @@ module GitMedia
         tempfile = Tempfile.new('media','.',:binmode => true)
 
         begin
-          GitMedia.get_object(tempfile,hash,true,info_output)
+          GitMedia.get_object(tempfile,tree_file,hash,true,info_output)
         rescue
           # It's apparently good practice to do this explicitly rather than relying on the GC
           tempfile.close
