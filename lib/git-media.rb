@@ -3,7 +3,9 @@ require 'bundler/setup'
 
 require 'trollop'
 require 'fileutils'
-#
+require 'tempfile'
+
+require 'git-media/helpers'
 
 module GitMedia
 
@@ -18,11 +20,6 @@ module GitMedia
     hash.enforce_hash
     buf = self.cache_path
     File.join(buf, hash)
-  end
-
-  # TODO: select the proper transports based on settings
-  def self.get_push_transport
-    self.get_transport
   end
 
   def self.get_credentials_from_netrc(url)
@@ -44,33 +41,12 @@ module GitMedia
     when ""
       raise "git-media.transport not set"
 
-    when "scp"
-      require 'git-media/transport/scp'
-
-      user = `git config git-media.scpuser`.chomp
-      host = `git config git-media.scphost`.chomp
-      path = `git config git-media.scppath`.chomp
-      port = `git config git-media.scpport`.chomp
-      if user === ""
-        raise "git-media.scpuser not set for scp transport"
-      end
-      if host === ""
-        raise "git-media.scphost not set for scp transport"
-      end
-      if path === ""
-        raise "git-media.scppath not set for scp transport"
-      end
-      GitMedia::Transport::Scp.new(user, host, path, port)
-
+    when "ssh"
+      require 'git-media/transport/ssh'
+      return GitMedia::Transport::SSH.new
     when "local"
       require 'git-media/transport/local'
-
-      path = `git config git-media.localpath`.chomp
-      if path === ""
-        raise "git-media.localpath not set for local transport"
-      end
-      GitMedia::Transport::Local.new(path)
-
+      return GitMedia::Transport::Local.new
     when "s3"
       require 'git-media/transport/s3'
 
@@ -157,10 +133,6 @@ module GitMedia
     end
   end
 
-  def self.get_pull_transport
-    self.get_transport
-  end
-
   module Application
     def self.run!
 
@@ -172,10 +144,10 @@ module GitMedia
       cmd_opts = case cmd
         when "filter-clean" # parse delete options
           require 'git-media/filter-clean'
-          return GitMedia::FilterClean.run!
+          return GitMedia::FilterClean.run!(ARGV.shift)
         when "filter-smudge"
           require 'git-media/filter-smudge'
-          return GitMedia::FilterSmudge.run!
+          return GitMedia::FilterSmudge.run!(ARGV.shift)
         when "clear" # parse delete options
           require 'git-media/clear'
           return GitMedia::Clear.run!
@@ -219,4 +191,84 @@ EOF
 
     end
   end
+
+    def self.get_object(ostr, opath, hash, download, info_output)
+      hash.enforce_hash
+
+      if ('da39a3ee5e6b4b0d3255bfef95601890afd80709'==hash)
+        # This is the null hash - generate an empty stream by exiting immediately with a warning
+        STDERR.puts 'Warning: empty-object reference found!'
+        return
+      end
+
+      download  ||=  'true' == `git config git-media.autodownload`.chomp.downcase
+      directDownload  =  'true' == `git config git-media.directdownload`.chomp.downcase
+
+      cache_obj_path = cache_obj_path(hash)
+
+      shorthash = GitMedia::Helpers.shorten(hash)
+
+      unless File.exist?(cache_obj_path)
+        raise "Warning: #{shorthash} missing from cache!" unless download
+
+        STDERR.puts "  #{shorthash}: downloading" if info_output
+
+        # We want to download and direct downloads are enabled, so download straight to ostr
+        return download_from_store(ostr,hash) if directDownload
+
+        # We want to dowload but direct downloads are disabled, so just download to cache
+        raise "  #{shorthash}: download failed" unless download_to_cache(cache_obj_path,hash)
+
+        STDERR.puts "  #{shorthash}: downloaded"
+      end
+
+      # Getting here implies that the matching object is in the cache, so expand it
+      GitMedia::Helpers.print_smudge(STDERR, opath, hash)
+
+      return File.open(cache_obj_path, 'rb') do |istr|
+        raise "  #{shorthash}: cache object failed hash check" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
+      end
+    end
+
+    def self.download_from_store(ostr,hash)
+      hash.enforce_hash
+
+      shorthash = GitMedia::Helpers.shorten(hash)
+
+      return get_transport.read(hash) do |istr|
+        raise "  #{shorthash}: rehash failed during download" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
+        next true
+      end
+    end
+
+    def self.download_to_cache(cache_obj_path,hash)
+      hash.enforce_hash
+
+      # Copy the data to a temporary filename within the local cache while hashing it
+      tempfile = Tempfile.new('media',cache_path,:binmode => true)
+
+      begin
+        download_from_store(tempfile,hash)
+      rescue
+        # It's apparently good practice to do this explicitly rather than relying on the GC
+        tempfile.close
+        tempfile.unlink
+        raise
+      end
+
+      # We got here, so we have a complete temp copy and a valid hash; explicitly close the tempfile to prevent 
+      # autodeletion, then give it its final name (the hash)
+      tempfile.close
+      FileUtils.mv(tempfile.path,cache_obj_path)
+    end
+
+    def self.push(hash,istr)
+      shorthash = GitMedia::Helpers.shorten(hash)
+
+      return get_transport.write(hash) do |ostr|
+        raise "#{shorthash}: rehash failed during upload" if hash != GitMedia::Helpers.copy_hashed(ostr,istr)
+        next true
+      end
+    end
+
 end

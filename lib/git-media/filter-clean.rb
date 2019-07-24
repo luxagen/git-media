@@ -4,7 +4,7 @@ require 'git-media/helpers'
 module GitMedia
   module FilterClean
 
-    def self.run!(input=STDIN, output=STDOUT, info_output=true)
+    def self.run!(tree_path, input=STDIN, output=STDOUT, info_output=true)
       
       input.binmode
       output.binmode
@@ -12,13 +12,18 @@ module GitMedia
       # Read the first data block
       prefix = input.read(GM_BUFFER_BYTES)
 
+      unless prefix
+#        STDERR.puts "git-media filter-clean: skipping empty file" if info_output
+        return 0
+      end
+
       if hash = prefix.stub2hash
         # If the pipe broke (rather than the input legitimately ending), the cached object is truncated and the hash is 
         # invalid; return nothing and allow the temp file to auto-delete
         GitMedia::Helpers.check_abort
 
         output.write(prefix) # Pass the stub through
-        STDERR.puts "#{hash}: leaving stub" if info_output
+        STDERR.puts "Warning: #{tree_path} is a stub" if info_output
         return 0
       end
 
@@ -38,10 +43,10 @@ module GitMedia
       tempfile.close
       FileUtils.mv(tempfile.path, GitMedia.cache_obj_path(hash))
 
-      strElapsed = (Time.now - start).to_s
+#      strElapsed = (Time.now - start).to_s
 
       output.puts hash # Substitute stub for data
-      STDERR.puts "#{hash}: cached in #{strElapsed} seconds" if info_output
+      GitMedia::Helpers.print_clean(STDERR, tree_path, hash) if info_output
 
       return 0
     end

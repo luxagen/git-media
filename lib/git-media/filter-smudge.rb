@@ -3,34 +3,37 @@ require 'git-media/helpers'
 module GitMedia
   module FilterSmudge
 
-    def self.run!(info_output=true)
+    def self.run!(tree_path, info_output=true)
       STDIN.binmode
       STDOUT.binmode
 
       prefix = STDIN.read(GM_BUFFER_BYTES)
 
+      unless prefix
+#        STDERR.puts "git-media filter-smudge: skipping empty file" if info_output
+        return 0
+      end
+
       unless hash = prefix.stub2hash
         # If the file isn't a stub, just pass it through
-        STDERR.puts 'not a git-media stub' if info_output
-        GitMedia.Helpers.copy(STDOUT,STDIN,prefix)
+        STDERR.puts "Warning: #{tree_path} is not a stub!" if info_output
+        GitMedia::Helpers.copy(STDOUT,STDIN,prefix)
+
+        # If the pipe broke (rather than the input legitimately ending), the stream is truncated
+        GitMedia::Helpers.check_abort
+
         return 0
       end
 
-      unless cache_obj_path = GitMedia::Helpers.ensure_cached(hash,"true" == `git config git-media.autodownload`.chomp.downcase)
-        print prefix # Pass stub through
-        return 0
-      end
+      autoDownload  =  "true" == `git config git-media.autodownload`.chomp.downcase
 
-      # Reaching here implies that cache_obj_path exists
-      STDERR.puts "#{hash}: expanding" if info_output
-      File.open(cache_obj_path, 'rb') do |f|
-        if hash != GitMedia::Helpers.copy_hashed(STDOUT,f)
-          STDERR.puts "#{hash}: cache object failed hash check"
-          return 1
-        end
+      begin
+        GitMedia.get_object(STDOUT,tree_path,hash,autoDownload,info_output)
+      rescue Exception => e
+        puts hash
+        STDERR.puts e
+        return 1
       end
-
-      return 0
     end
 
   end

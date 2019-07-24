@@ -1,0 +1,15 @@
+sync: pull
+sync: DD
+sync: push
+clear: isolated
+clear: partial
+clear: full
+add: cache
+checkout: isolated
+checkout: cached
+checkout: pull
+checkout: DD
+reset: isolated
+reset: cached
+reset: pull
+reset: DD

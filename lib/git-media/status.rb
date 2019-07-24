@@ -7,7 +7,7 @@ module GitMedia
   module Status
 
     def self.run!(opts)
-      @push = GitMedia.get_push_transport
+      @push = GitMedia.get_transport
       r = self.find_references
       self.print_references(r, opts[:short])
       r = self.local_cache_status
@@ -28,7 +28,8 @@ module GitMedia
           if size == tree_size.to_i or size == tree_size.to_i + 1
             # TODO: read in the data and verify that it's a sha + newline
             fname = fname.tr("\\","") #remove backslash
-            if hash = File.read(fname).stub2hash
+            content = File.read(fname,41,0,mode:"rb")
+            if content  &&  hash = content.stub2hash
               references[:to_expand] << [fname, hash]
             end
           else
@@ -50,7 +51,7 @@ module GitMedia
           puts "Count: " + refs[:to_expand].size.to_s
         else
           refs[:to_expand].each do |file, hash|
-            puts "   " + hash[0, 8] + " " + file
+            GitMedia::Helpers.print_mapping(STDOUT, file, hash)
           end
           puts
         end
@@ -87,8 +88,7 @@ module GitMedia
           puts "Count: " + refs[:unpushed].size.to_s
         else
           refs[:unpushed].each do |hash|
-            cache_file = GitMedia.cache_obj_path(hash)
-            size = File.size(cache_file)
+            size = File.size(GitMedia.cache_obj_path(hash))
             puts "   " + "(#{self.to_human(size)})".ljust(8) + ' ' + hash[0, 8]
           end
           puts
@@ -100,8 +100,7 @@ module GitMedia
           puts "Count: " + refs[:pushed].size.to_s
         else
           refs[:pushed].each do |hash|
-            cache_file = GitMedia.cache_obj_path(hash)
-            size = File.size(cache_file)
+            size = File.size(GitMedia.cache_obj_path(hash))
             puts "   " + "(#{self.to_human(size)})".ljust(8) + ' ' + hash[0, 8]
           end
           puts
@@ -113,7 +112,8 @@ module GitMedia
       # find files in media buffer and upload them
       references = {:unpushed => [], :pushed => []}
       all_cache = Dir.chdir(GitMedia.cache_path) { Dir.glob('*') }
-      unpushed_files = @push.get_unpushed(all_cache) || []
+      all_cache_set = all_cache.to_set
+      unpushed_files = @push.list(all_cache_set,all_cache_set) || []
       references[:unpushed] = unpushed_files
       references[:pushed] = all_cache - unpushed_files rescue []
       references

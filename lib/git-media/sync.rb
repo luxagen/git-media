@@ -7,8 +7,7 @@ module GitMedia
   module Sync
 
     def self.run!
-      @push = GitMedia.get_push_transport
-      @pull = GitMedia.get_pull_transport
+      @push = @pull = GitMedia.get_transport
 
       self.expand_references
       self.update_index
@@ -19,15 +18,31 @@ module GitMedia
       status = GitMedia::Status.find_references
       strCount = status[:to_expand].length.to_s
 
+      info_output=true
+
       status[:to_expand].each_with_index do |tuple, index|
         tree_file = tuple[0]
         hash = tuple[1].enforce_hash
 
-        return 1 unless cache_obj_path = GitMedia::Helpers.ensure_cached(hash,true)
+        GitMedia::Helpers.print_smudge(STDOUT, tree_file, hash, " [#{(index+1).to_s}/#{strCount}]") if info_output
 
-        strIdx = (index+1).to_s
-        puts "#{hash}: expanding to #{tree_file} [#{strIdx}/#{strCount}]"
-        GitMedia::Helpers.expand(tree_file,hash)
+        # Copy the data to a temporary filename within the working tree while hashing it
+        tempfile = Tempfile.new('media','.',:binmode => true)
+
+        begin
+          GitMedia.get_object(tempfile,tree_file,hash,true,info_output)
+        rescue
+          # It's apparently good practice to do this explicitly rather than relying on the GC
+          tempfile.close
+          tempfile.unlink
+          raise
+        end
+
+        # We got here, so we have a complete temp copy and a valid hash; explicitly close the tempfile to prevent 
+        # autodeletion, then give it its final name (the hash)
+        tempfile.close
+        FileUtils.mv(tempfile.path,tree_file)
+
       end
     end
 
@@ -52,14 +67,19 @@ module GitMedia
     def self.upload_local_cache
       # find files in media buffer and upload them
       all_cache = Dir.chdir(GitMedia.cache_path) { Dir.glob('*') }
-      unpushed_files = @push.get_unpushed(all_cache)
+      all_cache_set = all_cache.to_set
+      unpushed_files = @push.list(all_cache_set,all_cache_set)
 
       strCount = unpushed_files.length.to_s
 
       unpushed_files.each_with_index do |hash, index|
         strIdx = (index+1).to_s
         puts "#{hash}: uploading [#{strIdx}/#{strCount}]"
-        @push.push(hash)
+        GitMedia.push(
+          hash,
+          File.open(
+            File.join(GitMedia.cache_path, hash),
+            'rb'))
       end
       # TODO: if --clean, remove them
     end

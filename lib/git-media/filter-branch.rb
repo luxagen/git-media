@@ -121,7 +121,7 @@ module GitMedia
               githash_output_writer.close
               githash_reader.close
 
-              GitMedia::FilterClean.run!(gitcat_reader, githash_writer, false)
+              GitMedia::FilterClean.run!('[new]', gitcat_reader, githash_writer, false)
               
               gitcat_reader.close
               githash_writer.close
