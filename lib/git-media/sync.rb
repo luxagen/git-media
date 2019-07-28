@@ -9,9 +9,9 @@ module GitMedia
     def self.run!
       @push = @pull = GitMedia.get_transport
 
+      self.upload_local_cache
       self.expand_references
       self.update_index
-      self.upload_local_cache
     end
 
     def self.expand_references
