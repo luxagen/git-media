@@ -27,6 +27,9 @@ GM_BUFFER_BYTES=1048576
 
 module GitMedia
   module Helpers
+    def self.list_objects(path)
+      return Dir.chdir(path) { Dir.entries('.').select { |f| File.file?(f) && f.hash? }}
+    end
 
     def self.shorten(hash)
       return hash[0, 12]
