@@ -22,19 +22,6 @@ module GitMedia
     File.join(buf, hash)
   end
 
-  def self.get_credentials_from_netrc(url)
-    require 'uri'
-    require 'netrc'
-
-    uri = URI(url)
-    hostname = uri.host
-    unless hostname
-      raise "Cannot identify hostname within git-media.webdavurl value"
-    end
-    netrc = Netrc.read
-    netrc[hostname]
-  end
-
   def self.get_transport
     transport = `git config git-media.transport`.chomp
     case transport
@@ -47,87 +34,6 @@ module GitMedia
     when "local"
       require 'git-media/transport/local'
       return GitMedia::Transport::Local.new
-    when "s3"
-      require 'git-media/transport/s3'
-
-      bucket = `git config git-media.s3bucket`.chomp
-      key = `git config git-media.s3key`.chomp
-      secret = `git config git-media.s3secret`.chomp
-      if bucket === ""
-        raise "git-media.s3bucket not set for s3 transport"
-      end
-      if key === ""
-        raise "git-media.s3key not set for s3 transport"
-      end
-      if secret === ""
-        raise "git-media.s3secret not set for s3 transport"
-      end
-      GitMedia::Transport::S3.new(bucket, key, secret)
-
-    when "atmos"
-      require 'git-media/transport/atmos_client'
-
-      endpoint = `git config git-media.endpoint`.chomp
-      uid = `git config git-media.uid`.chomp
-      secret = `git config git-media.secret`.chomp
-      tag = `git config git-media.tag`.chomp
-
-      if endpoint == ""
-        raise "git-media.endpoint not set for atmos transport"
-      end
-
-      if uid == ""
-        raise "git-media.uid not set for atmos transport"
-      end
-
-      if secret == ""
-        raise "git-media.secret not set for atmos transport"
-      end
-      GitMedia::Transport::AtmosClient.new(endpoint, uid, secret, tag)
-    when "webdav"
-      require 'git-media/transport/webdav'
-
-      url = `git config git-media.webdavurl`.chomp
-      user = `git config git-media.webdavuser`.chomp
-      password = `git config git-media.webdavpassword`.chomp
-      verify_server = `git config git-media.webdavverifyserver`.chomp == 'true'
-      binary_transfer = `git config git-media.webdavbinarytransfer`.chomp == 'true'
-      if url == ""
-        raise "git-media.webdavurl not set for webdav transport"
-      end
-      if user == ""
-        user, password = self.get_credentials_from_netrc(url)
-      end
-      if !user
-        raise "git-media.webdavuser not set for webdav transport"
-      end
-      if !password
-        raise "git-media.webdavpassword not set for webdav transport"
-      end
-      GitMedia::Transport::WebDav.new(url, user, password, verify_server, binary_transfer)
-    when "box"
-      require 'git-media/transport/box'
-
-      client_id = `git config git-media.boxclientid`.chomp
-      client_secret = `git config git-media.boxclientsecret`.chomp
-      redirect_uri = `git config git-media.boxredirecturi`.chomp
-      folder_id = `git config git-media.boxfolderid`.chomp
-
-      access_token = `git config git-media.boxaccesstoken`.chomp
-      refresh_token = `git config git-media.boxrefreshtoken`.chomp
-      if client_id == ""
-        raise "git-media.boxclientid not set for box transport"
-      end
-      if client_secret == ""
-        raise "git-media.boxclientsecret not set for box transport"
-      end
-      if redirect_uri == ""
-        raise "git-media.boxredirecturi not set for box transport"
-      end
-      if folder_id == ""
-        raise "git-media.boxfolderid not set for box transport"
-      end
-      GitMedia::Transport::Box.new(client_id, client_secret, redirect_uri, folder_id, access_token, refresh_token)
     else
       raise "Invalid transport #{transport}"
     end
