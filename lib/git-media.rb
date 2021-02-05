@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'bundler/setup'
 
-require 'trollop'
+require 'optimist'
 require 'fileutils'
 require 'tempfile'
 
@@ -62,7 +62,7 @@ module GitMedia
           return GitMedia::Sync.run!
         when 'status'
           require 'git-media/status'
-          opts = Trollop::options do
+          opts = Optimist::options do
             opt :force, "Force status"
             opt :short, "Short status"
           end
